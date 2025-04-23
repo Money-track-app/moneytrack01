@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const LoginForm = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [message, setMessage] = useState('');
+  const navigate = useNavigate(); // ✅ React navigation
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -14,18 +16,18 @@ const LoginForm = () => {
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: 'include',
         body: JSON.stringify({ email, password }),
       });
 
       const data = await response.json();
 
       if (response.ok) {
-        setMessage(data.message);
-        localStorage.setItem('token', data.token);
+        localStorage.setItem('token', data.token); // ✅ store token
         setEmail('');
         setPassword('');
-        // Optional: redirect after login
-        window.location.href = '/';
+        setMessage('');
+        navigate('/dashboard'); // ✅ redirect to dashboard
       } else {
         setMessage(data.message || 'Login failed');
       }
@@ -34,15 +36,15 @@ const LoginForm = () => {
     }
   };
 
-  // ✅ New function for Google login
   const handleGoogleLogin = () => {
-    window.location.href = "http://localhost:5000/auth/google";
+    // Redirect to Google login
+    window.location.href = 'http://localhost:5000/auth/google';
   };
 
   return (
     <form onSubmit={handleLogin} style={{ textAlign: 'center' }}>
       <h2>Login</h2>
-  
+
       <input
         type="email"
         placeholder="Email"
@@ -51,7 +53,7 @@ const LoginForm = () => {
         required
       />
       <br />
-  
+
       <input
         type="password"
         placeholder="Password"
@@ -60,23 +62,23 @@ const LoginForm = () => {
         required
       />
       <br />
-  
-      {/* Login button */}
+
       <div style={{ margin: '10px 0' }}>
         <button type="submit">Login</button>
       </div>
-  
-      {/* Google button */}
+
       <div style={{ marginBottom: '15px' }}>
         <button type="button" onClick={handleGoogleLogin}>
           Continue with Google
         </button>
       </div>
-  
+
       {message && <p>{message}</p>}
     </form>
   );
 };
 
 export default LoginForm;
+
+
 

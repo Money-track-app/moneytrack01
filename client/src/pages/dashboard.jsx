@@ -1,35 +1,38 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 const Dashboard = () => {
-  const [token, setToken] = useState('');
+  const location = useLocation();
+  const navigate = useNavigate();
 
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
+    const params = new URLSearchParams(location.search);
     const tokenFromURL = params.get('token');
 
     if (tokenFromURL) {
+      // ✅ Save token from URL
       localStorage.setItem('token', tokenFromURL);
-      setToken(tokenFromURL);
-      window.history.replaceState(null, '', '/dashboard');
-    } else {
-      const savedToken = localStorage.getItem('token');
-      if (savedToken) {
-        setToken(savedToken);
-      } else {
-        window.location.href = '/';
-      }
+
+      // ✅ Clean up the URL
+      window.history.replaceState({}, document.title, '/dashboard');
     }
-  }, []);
+
+    const token = localStorage.getItem('token');
+
+    // 🚫 If no token found, redirect to login
+    if (!token) {
+      navigate('/');
+    }
+  }, [location, navigate]);
 
   return (
-    <div style={{ textAlign: 'center', marginTop: '50px' }}>
-      <h1>🚀 Welcome to your Dashboard</h1>
-      <p>You are logged in!</p>
-      <p>Token: {token.slice(0, 20)}... 🔐</p>
+    <div style={{ textAlign: 'center' }}>
+      <h2>🎉 Welcome to your Dashboard!</h2>
+      <p>You are successfully signed in.</p>
     </div>
   );
 };
 
-// ✅ This line is required
 export default Dashboard;
+
 
