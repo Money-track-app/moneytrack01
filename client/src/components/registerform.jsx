@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import './authform.css';
 
 const RegisterForm = () => {
   const [email, setEmail] = useState('');
@@ -20,7 +21,7 @@ const RegisterForm = () => {
       const data = await response.json();
 
       if (response.ok) {
-        setMessage(data.message);
+        setMessage(data.message || 'Registration successful!');
         setEmail('');
         setPassword('');
       } else {
@@ -32,8 +33,9 @@ const RegisterForm = () => {
   };
 
   return (
-    <form onSubmit={handleRegister}>
+    <form className="auth-form" onSubmit={handleRegister}>
       <h2>Register</h2>
+
       <input
         type="email"
         placeholder="Email"
@@ -41,7 +43,7 @@ const RegisterForm = () => {
         onChange={(e) => setEmail(e.target.value)}
         required
       />
-      <br />
+
       <input
         type="password"
         placeholder="Password"
@@ -49,11 +51,13 @@ const RegisterForm = () => {
         onChange={(e) => setPassword(e.target.value)}
         required
       />
-      <br />
+
       <button type="submit">Register</button>
-      {message && <p>{message}</p>}
+
+      {message && <p className="auth-message">{message}</p>}
     </form>
   );
 };
 
 export default RegisterForm;
+

@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import './authform.css';
 
 const LoginForm = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [message, setMessage] = useState('');
-  const navigate = useNavigate(); // ✅ React navigation
+  const navigate = useNavigate();
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -23,11 +24,11 @@ const LoginForm = () => {
       const data = await response.json();
 
       if (response.ok) {
-        localStorage.setItem('token', data.token); // ✅ store token
+        localStorage.setItem('token', data.token);
         setEmail('');
         setPassword('');
         setMessage('');
-        navigate('/dashboard'); // ✅ redirect to dashboard
+        navigate('/dashboard');
       } else {
         setMessage(data.message || 'Login failed');
       }
@@ -37,12 +38,11 @@ const LoginForm = () => {
   };
 
   const handleGoogleLogin = () => {
-    // Redirect to Google login
     window.location.href = 'http://localhost:5000/auth/google';
   };
 
   return (
-    <form onSubmit={handleLogin} style={{ textAlign: 'center' }}>
+    <form className="auth-form" onSubmit={handleLogin}>
       <h2>Login</h2>
 
       <input
@@ -52,7 +52,6 @@ const LoginForm = () => {
         onChange={(e) => setEmail(e.target.value)}
         required
       />
-      <br />
 
       <input
         type="password"
@@ -61,24 +60,16 @@ const LoginForm = () => {
         onChange={(e) => setPassword(e.target.value)}
         required
       />
-      <br />
 
-      <div style={{ margin: '10px 0' }}>
-        <button type="submit">Login</button>
-      </div>
+      <button type="submit">Login</button>
 
-      <div style={{ marginBottom: '15px' }}>
-        <button type="button" onClick={handleGoogleLogin}>
-          Continue with Google
-        </button>
-      </div>
+      <button type="button" onClick={handleGoogleLogin}>
+        Continue with Google
+      </button>
 
-      {message && <p>{message}</p>}
+      {message && <p className="auth-message">{message}</p>}
     </form>
   );
 };
 
 export default LoginForm;
-
-
-

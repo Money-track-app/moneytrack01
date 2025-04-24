@@ -15,8 +15,9 @@ const User = require('./models/user');
 require('./passport'); // 🔐 Import Google OAuth strategy
 
 // ✅ Middleware
-app.use(cors({ origin: 'http://localhost:5173', credentials: true }));
+app.use(cors({ origin: 'http://localhost:5174', credentials: true }));
 app.use(express.json());
+
 
 // 🔐 Session + Passport (required for Google OAuth)
 app.use(session({

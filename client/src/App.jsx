@@ -1,27 +1,25 @@
 import './App.css';
-import LoginForm from './components/loginform';
-import RegisterForm from './components/registerform';
-import Dashboard from './pages/dashboard';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { useState } from 'react';
 
-function AuthPage() {
-  const [isRegistering, setIsRegistering] = useState(false);
+// Pages
+import AuthPage from './pages/auth';
+import Dashboard from './pages/dashboard';
+import Categories from './pages/categories';
+import AddTransaction from './pages/addtransaction';
+import Reports from './pages/reports';
+import Recurring from './pages/recurring';
+import Settings from './pages/settings';
 
+// Layout
+import Sidebar from './components/sidebar';
+
+function DashboardLayout({ children }) {
   return (
-    <div className="App">
-      <h1>MoneyTrack</h1>
-
-      {isRegistering ? <RegisterForm /> : <LoginForm />}
-
-      <button
-        style={{ marginTop: '20px' }}
-        onClick={() => setIsRegistering(!isRegistering)}
-      >
-        {isRegistering
-          ? 'Already have an account? Login'
-          : "Don't have an account? Register"}
-      </button>
+    <div className="layout-wrapper">
+      <Sidebar />
+      <main className="main-content">
+        {children}
+      </main>
     </div>
   );
 }
@@ -30,12 +28,64 @@ function App() {
   return (
     <Router>
       <Routes>
+        {/* ✅ Auth Page (centered login/register) */}
         <Route path="/" element={<AuthPage />} />
-        <Route path="/dashboard" element={<Dashboard />} />
+
+        {/* ✅ Dashboard & Other Pages (with sidebar layout) */}
+        <Route
+          path="/dashboard"
+          element={
+            <DashboardLayout>
+              <Dashboard />
+            </DashboardLayout>
+          }
+        />
+        <Route
+          path="/categories"
+          element={
+            <DashboardLayout>
+              <Categories />
+            </DashboardLayout>
+          }
+        />
+        <Route
+          path="/add-transaction"
+          element={
+            <DashboardLayout>
+              <AddTransaction />
+            </DashboardLayout>
+          }
+        />
+        <Route
+          path="/reports"
+          element={
+            <DashboardLayout>
+              <Reports />
+            </DashboardLayout>
+          }
+        />
+        <Route
+          path="/recurring"
+          element={
+            <DashboardLayout>
+              <Recurring />
+            </DashboardLayout>
+          }
+        />
+        <Route
+          path="/settings"
+          element={
+            <DashboardLayout>
+              <Settings />
+            </DashboardLayout>
+          }
+        />
       </Routes>
     </Router>
   );
 }
 
 export default App;
+
+
 

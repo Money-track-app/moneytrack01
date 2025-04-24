@@ -1,0 +1,46 @@
+/* Center full screen */
+.auth-page {
+    height: 100vh; /* Fixed: full height to allow vertical centering */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #f9fafb;
+    padding: 20px;
+  }
+  
+  /* Centered auth box */
+  .auth-container {
+    background-color: #ffffff;
+    padding: 40px 30px;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    width: 100%;
+    max-width: 400px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px; /* Spacing between elements */
+  }
+  
+  .auth-container h1 {
+    margin: 0;
+    font-size: 24px;
+    color: #1a1a2e;
+  }
+  
+  .auth-container button {
+    padding: 12px 20px;
+    background-color: #1a1a2e;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 16px;
+    width: 100%;
+    transition: background 0.3s ease;
+  }
+  
+  .auth-container button:hover {
+    background-color: #16213e;
+  }
+  
