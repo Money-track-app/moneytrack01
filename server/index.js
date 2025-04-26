@@ -108,6 +108,11 @@ app.post('/api/transactions', authenticate, async (req, res) => {
 });
 
 
+// ✅ Report route — make sure it's connected correctly!
+const reportRoutes = require('./routes/reportroutes');
+app.use('/api/reports', reportRoutes); // <- THIS LINE ENABLES /api/reports
+
+
 // ✅ Root route
 app.get('/', (req, res) => res.send('✅ Backend is running!'));
 
