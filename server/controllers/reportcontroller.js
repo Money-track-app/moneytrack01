@@ -4,18 +4,27 @@ const Transaction = require('../models/transaction');
 
 exports.getReport = async (req, res) => {
   try {
-    // Use `new` when creating an ObjectId
     const userId = new mongoose.Types.ObjectId(req.user.id);
 
-    // 1) Totals by type
+    // build our match filter without any TS annotation
+    const match = { userId };
+    if (req.query.start) {
+      const startDate = new Date(req.query.start);
+      match.date = { ...match.date, $gte: startDate };
+    }
+    if (req.query.end) {
+      const endDate = new Date(req.query.end);
+      endDate.setHours(23, 59, 59, 999);
+      match.date = { ...match.date, $lte: endDate };
+    }
+
     const totals = await Transaction.aggregate([
-      { $match: { userId } },
+      { $match: match },
       { $group: { _id: '$type', total: { $sum: '$amount' } } }
     ]);
 
-    // 2) Breakdown by category
     const byCategory = await Transaction.aggregate([
-      { $match: { userId } },
+      { $match: match },
       {
         $group: {
           _id: { $ifNull: ['$category', 'Uncategorized'] },
@@ -24,7 +33,6 @@ exports.getReport = async (req, res) => {
       }
     ]);
 
-    // 3) Summary numbers
     const totalIncome   = totals.find(t => t._id === 'income')?.total   || 0;
     const totalExpenses = totals.find(t => t._id === 'expense')?.total  || 0;
     const balance       = totalIncome - totalExpenses;
@@ -41,3 +49,4 @@ exports.getReport = async (req, res) => {
     return res.status(500).json({ message: 'Failed to fetch report', error: err.message });
   }
 };
+
