@@ -2,15 +2,14 @@
 .main-content {
     background-color: #fff !important;
   }
+  
   /* Page wrapper */
-
-.reports-page {
+  .reports-page {
     padding: 1rem 2rem;
     display: flex;
     flex-direction: column;
     align-items: center;
     background-color: white;
-    
   }
   
   /* Date pickers */
@@ -102,9 +101,10 @@
     border-bottom: 1px solid #ddd;
   }
   .transactions-table th {
-    background: #f5f5f5;
+    background: #1596ff;
     position: sticky;
     top: 0;
+    color: white;
   }
   .transactions-table tr:hover {
     background: rgba(0, 0, 0, 0.03);
@@ -141,6 +141,85 @@
   .clear-filter-btn:focus {
     outline: none;
     box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.5);
+  }
+  
+  /* Table Actions: move exports next to Transactions heading */
+  .table-actions {
+    margin-left: auto;
+    display: flex;
+    gap: 0.5rem;
+  }
+  .export-btn {
+    background-color: #28a745;
+    color: #fff;
+    border: none;
+    padding: 0.3rem 0.8rem;
+    border-radius: 0.25rem;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+  }
+  .export-btn:hover {
+    background-color: #218838;
+  }
+  
+  /* Export buttons container */
+  .export-buttons {
+    display: flex;
+    gap: 1rem;
+    margin: 1.5rem auto;
+    width: 100%;
+    max-width: 800px;
+    justify-content: flex-end;
+  }
+  
+  /* Export buttons themselves */
+  .export-buttons button {
+    background-color: #28a745;
+    color: #fff;
+    border: none;
+    padding: 0.5rem 1.25rem;
+    border-radius: 0.25rem;
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s ease, transform 0.1s ease;
+  }
+  .export-buttons button:hover {
+    background-color: #218838;
+    transform: translateY(-1px);
+  }
+  .export-buttons button:active {
+    background-color: #1e7e34;
+    transform: translateY(0);
+  }
+  .export-buttons button:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(40, 167, 69, 0.5);
+  }
+  
+  /* Responsive tweaks for export buttons */
+  @media (max-width: 768px) {
+    .export-buttons {
+      justify-content: center;
+    }
+    .export-buttons button {
+      padding: 0.4rem 1rem;
+      font-size: 0.85rem;
+    }
+  }
+  
+  @media (max-width: 480px) {
+    .export-buttons {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 0.75rem;
+    }
+    .export-buttons button {
+      width: 100%;
+      padding: 0.4rem 0;
+      font-size: 0.85rem;
+    }
   }
   
   /* Tablet */
