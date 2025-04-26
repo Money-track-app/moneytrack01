@@ -134,20 +134,7 @@ export default function Reports() {
     saveAs(new Blob([csv], { type:'text/csv;charset=utf-8;' }), 'transactions.csv');
   };
 
-  const exportExcel = () => {
-    const data = displayedTxns.map(tx => ({
-      Date: new Date(tx.date).toLocaleDateString(),
-      Description: tx.description,
-      Category: tx.category||'Uncategorized',
-      Type: tx.type,
-      Amount: tx.amount
-    }));
-    const ws = XLSX.utils.json_to_sheet(data);
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, 'Transactions');
-    const wbout = XLSX.write(wb, { bookType:'xlsx', type:'array' });
-    saveAs(new Blob([wbout], { type:'application/octet-stream' }), 'transactions.xlsx');
-  };
+
 
   const exportPDF = () => {
     const doc = new jsPDF();
@@ -260,9 +247,7 @@ export default function Reports() {
             <button className="export-btn" onClick={exportCSV}>
               CSV
             </button>
-            <button className="export-btn" onClick={exportExcel}>
-              Excel
-            </button>
+           
             <button className="export-btn" onClick={exportPDF}>
               PDF
             </button>
