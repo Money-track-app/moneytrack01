@@ -1,0 +1,120 @@
+/* force the main-content wrapper that holds Reports to be white */
+.main-content {
+  background-color: #fff !important;
+}
+/* receipts.css */
+
+/* Page wrapper */
+.receipts-page {
+    padding: 2rem;
+    background-color: #fff ;
+    min-height: 100vh;
+  }
+  
+  /* Heading */
+  .receipts-page h1 {
+    font-size: 2rem;
+    margin-bottom: 1.5rem;
+    color: #2c3e50;
+    font-weight: 600;
+  }
+
+  
+  
+  /* Filter label & select */
+  .receipts-page label {
+    display: flex;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    font-size: 1rem;
+    color: #34495e;
+  }
+  
+  .receipts-page label select {
+    margin-left: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    border: 1px solid #ccd1d9;
+    border-radius: 4px;
+    background-color: #fff;
+    font-size: 1rem;
+    color: #2c3e50;
+    transition: border-color 0.2s ease;
+  }
+  
+  .receipts-page label select:focus {
+    border-color: #1abc9c;
+    outline: none;
+  }
+  
+  /* Grid container */
+  .receipts-grid {
+    display: grid;
+    gap: 1.5rem;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  }
+  
+  /* Card styles */
+  .receipt-card {
+    background-color: #00d0ff;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    cursor: pointer;
+  }
+  
+  .receipt-card a {
+    color: black;
+    text-decoration: none;   /* remove underline */
+  }
+  
+  .receipt-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  }
+  
+  /* Thumbnail image */
+  .receipt-thumb {
+    width: 100%;
+    height: 140px;
+    object-fit: cover;
+    color: black; 
+  }
+  
+  /* Category label */
+  .receipt-card p {
+    margin: 0;
+    padding: 0.75rem 1rem;
+    font-size: 0.95rem;
+    color: #000000;
+    border-top: 1px solid #ecf0f1;
+  }
+  
+  /* Responsive tweaks */
+  @media (max-width: 1024px) {
+    .receipts-page {
+      padding: 1.5rem;
+    }
+    .receipts-page h1 {
+      font-size: 1.75rem;
+    }
+  }
+  
+  @media (max-width: 768px) {
+    .receipts-grid {
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    }
+  }
+  
+  @media (max-width: 480px) {
+    .receipts-page {
+      padding: 1rem;
+    }
+    .receipt-thumb {
+      height: 120px;
+    }
+    .receipt-card {
+      box-shadow: none;
+    }
+  }
+  

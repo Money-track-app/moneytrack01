@@ -11,15 +11,13 @@ const app = express();
 const PORT = 5000;
 const SECRET = process.env.JWT_SECRET || 'secretkey';
 
+// Models & Passport config
 const User = require('./models/user');
-const Transaction = require('./models/transaction');
 require('./passport'); // 🔐 Google OAuth strategy
 
-// ✅ Middleware
+// ✅ Global Middleware
 app.use(cors({ origin: 'http://localhost:5173', credentials: true }));
 app.use(express.json());
-
-// 🔐 Session + Passport
 app.use(session({
   secret: 'sessionSecret123',
   resave: false,
@@ -46,10 +44,7 @@ app.post('/auth/register', async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, 10);
     const newUser = await User.create({ email, password: hashedPassword });
 
-    res.status(201).json({
-      message: 'User registered successfully',
-      user: { id: newUser._id, email: newUser.email }
-    });
+    res.status(201).json({ message: 'User registered successfully', user: { id: newUser._id, email: newUser.email } });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
@@ -72,7 +67,6 @@ app.post('/auth/login', async (req, res) => {
 
 // ✅ Google OAuth routes
 app.get('/auth/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
-
 app.get('/auth/google/callback',
   passport.authenticate('google', { failureRedirect: '/login', session: false }),
   (req, res) => {
@@ -81,45 +75,23 @@ app.get('/auth/google/callback',
   }
 );
 
-// ✅ Transaction route with Authentication middleware
-const authenticate = (req, res, next) => {
-  const token = req.headers.authorization?.split(' ')[1];
-  if (!token) return res.status(401).send('No token provided.');
+// ✅ JWT Authentication middleware
+const authenticate = require('./middleware/authenticate');
 
-  jwt.verify(token, SECRET, (err, decoded) => {
-    if (err) return res.status(403).send('Invalid token.');
-    req.user = decoded;
-    next();
-  });
-};
-
-app.post('/api/transactions', authenticate, async (req, res) => {
-  console.log('User from token:', req.user); // 👈 Add this
-  try {
-    const transaction = await Transaction.create({
-      ...req.body,
-      userId: req.user.id
-    });
-    res.status(201).json(transaction);
-  } catch (err) {
-    console.error('❌ Transaction Error:', err.message);
-    res.status(500).json({ error: err.message });
-  }
-});
-
-
-// ✅ Report route — make sure it's connected correctly!
+// ✅ Mount API routes
 const reportRoutes = require('./routes/reportroutes');
-app.use('/api/reports', reportRoutes); // <- THIS LINE ENABLES /api/reports
+app.use('/api/reports', reportRoutes);
 
 const transactionRoutes = require('./routes/transactionroutes');
 app.use('/api/transactions', transactionRoutes);
 
-
+const receiptsRoutes = require('./routes/receiptsroutes');
+app.use('/api/receipts', receiptsRoutes);
 
 // ✅ Root route
 app.get('/', (req, res) => res.send('✅ Backend is running!'));
 
-// ✅ Server listening
+// ✅ Start server
 app.listen(PORT, () => console.log(`🚀 Server running at http://localhost:${PORT}`));
+
 

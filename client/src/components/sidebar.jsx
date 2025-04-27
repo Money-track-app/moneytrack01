@@ -5,11 +5,11 @@ import "./Sidebar.css";
 const Sidebar = () => {
   const [isOpen, setIsOpen] = useState(false);
 
-  // Close sidebar when screen resizes to desktop
+  // Auto-close sidebar if screen is resized to desktop
   useEffect(() => {
     const handleResize = () => {
       if (window.innerWidth > 768) {
-        setIsOpen(false); // Sidebar is always visible on desktop anyway
+        setIsOpen(false);
       }
     };
     window.addEventListener("resize", handleResize);
@@ -18,11 +18,12 @@ const Sidebar = () => {
 
   return (
     <>
-     <button className="toggle-btn" onClick={() => setIsOpen(!isOpen)}>
-  &#9776; {/* Unicode hamburger menu */}
-</button>
-
-
+      <button
+        className={`toggle-btn ${isOpen ? "active" : ""}`}
+        onClick={() => setIsOpen(!isOpen)}
+      >
+        ☰
+      </button>
 
       <aside className={`sidebar ${isOpen ? "open" : ""}`}>
         <h2>MoneyTrack</h2>
@@ -31,6 +32,7 @@ const Sidebar = () => {
           <li><Link to="/add-transaction">➕ Add Transaction</Link></li>
           <li><Link to="/reports">📈 Reports</Link></li>
           <li><Link to="/categories">📂 Categories</Link></li>
+          <li><Link to="/receipts">🧾 Receipts</Link></li>
           <li><Link to="/recurring">🔁 Recurring</Link></li>
           <li><Link to="/settings">⚙️ Settings</Link></li>
         </ul>
@@ -40,5 +42,7 @@ const Sidebar = () => {
 };
 
 export default Sidebar;
+
+
 
 

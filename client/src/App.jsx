@@ -9,6 +9,7 @@ import AddTransaction from './pages/addtransaction';
 import Reports from './pages/reports';
 import Recurring from './pages/recurring';
 import Settings from './pages/settings';
+import Receipts from './pages/receipts';
 
 // Layout
 import Sidebar from './components/sidebar';
@@ -28,10 +29,10 @@ function App() {
   return (
     <Router>
       <Routes>
-        {/* ✅ Auth Page (centered login/register) */}
+        {/* Auth Page */}
         <Route path="/" element={<AuthPage />} />
 
-        {/* ✅ Dashboard & Other Pages (with sidebar layout) */}
+        {/* Dashboard & Other Pages (with sidebar layout) */}
         <Route
           path="/dashboard"
           element={
@@ -80,12 +81,21 @@ function App() {
             </DashboardLayout>
           }
         />
+        <Route
+          path="/receipts"
+          element={
+            <DashboardLayout>
+              <Receipts />
+            </DashboardLayout>
+          }
+        />
       </Routes>
     </Router>
   );
 }
 
 export default App;
+
 
 
 
