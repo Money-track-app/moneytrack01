@@ -17,7 +17,8 @@ export default function Scheduled() {
     month: 1,
   });
   const [error, setError] = useState(null);
-  const [success, setSuccess] = useState(null); // Added success state
+  const [success, setSuccess] = useState(null);
+  const [editingRuleId, setEditingRuleId] = useState(null);
 
   // JWT token from localStorage
   const token = localStorage.getItem('token');
@@ -31,8 +32,10 @@ export default function Scheduled() {
           Authorization: `Bearer ${token}`,
         },
       });
-      if (!res.ok) throw new Error(`Error ${res.status}`);
+      console.log('GET /api/scheduled →', res.status);
       const data = await res.json();
+      console.log('GET /api/scheduled payload:', data);
+      if (!res.ok) throw new Error(data.error || `Error ${res.status}`);
       setRules(data);
     } catch (err) {
       console.error(err);
@@ -44,14 +47,50 @@ export default function Scheduled() {
     fetchRules();
   }, [fetchRules]);
 
-  // Handle form submission
+  // Populate form for editing
+  function startEditing(rule) {
+    setEditingRuleId(rule._id);
+    setForm({
+      title: rule.title,
+      type: rule.type,
+      amount: rule.amount,
+      category: rule.category,
+      frequency: rule.frequency,
+      dayOfMonth: rule.dayOfMonth,
+      month: rule.month,
+    });
+    setError(null);
+    setSuccess(null);
+  }
+
+  // Delete a rule
+  async function deleteRule(id) {
+    if (!window.confirm('Delete this schedule?')) return;
+    try {
+      const res = await fetch(`${API_URL}/api/scheduled/${id}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) throw new Error('Delete failed');
+      fetchRules();
+    } catch (err) {
+      console.error(err);
+      setError(err.message || 'Failed to delete schedule');
+    }
+  }
+
+  // Handle form submit for create & update
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError(null);
     setSuccess(null);
     try {
-      const res = await fetch(`${API_URL}/api/scheduled`, {
-        method: 'POST',
+      const url = editingRuleId
+        ? `${API_URL}/api/scheduled/${editingRuleId}`
+        : `${API_URL}/api/scheduled`;
+      const method = editingRuleId ? 'PUT' : 'POST';
+      const res = await fetch(url, {
+        method,
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
@@ -61,11 +100,12 @@ export default function Scheduled() {
       const result = await res.json();
       if (!res.ok) throw new Error(result.error || 'Save failed');
 
-      // Reset form fields
-      setForm({ ...form, title: '', amount: '', category: '' });
-      setSuccess('Schedule saved successfully!'); // Set success message
-      setTimeout(() => setSuccess(null), 3000); // Clear after 3s
-
+      setSuccess(
+        editingRuleId ? 'Schedule updated successfully!' : 'Schedule saved successfully!'
+      );
+      setTimeout(() => setSuccess(null), 3000);
+      setEditingRuleId(null);
+      setForm({ title: '', type: 'income', amount: '', category: '', frequency: 'monthly', dayOfMonth: 1, month: 1 });
       fetchRules();
     } catch (err) {
       console.error(err);
@@ -75,10 +115,12 @@ export default function Scheduled() {
 
   return (
     <div className="scheduled-container">
-      <h2 className="scheduled-header">Add Scheduled Transaction</h2>
+      <h2 className="scheduled-header">
+        {editingRuleId ? 'Edit Scheduled Transaction' : 'Add Scheduled Transaction'}
+      </h2>
 
       {error && <div className="error-message">{error}</div>}
-      {success && <div className="success-message">{success}</div>} {/* Success message */}
+      {success && <div className="success-message">{success}</div>}
 
       <form onSubmit={handleSubmit} className="scheduled-form">
         <div className="form-group">
@@ -147,7 +189,6 @@ export default function Scheduled() {
             type="number"
             min="1"
             max="31"
-            placeholder="Day of Month"
             value={form.dayOfMonth}
             onChange={(e) => setForm({ ...form, dayOfMonth: +e.target.value })}
             required
@@ -162,7 +203,6 @@ export default function Scheduled() {
               type="number"
               min="1"
               max="12"
-              placeholder="Month (1–12)"
               value={form.month}
               onChange={(e) => setForm({ ...form, month: +e.target.value })}
               required
@@ -171,23 +211,60 @@ export default function Scheduled() {
         )}
 
         <button type="submit" className="btn-primary full-width">
-          Save Schedule
+          {editingRuleId ? 'Update Schedule' : 'Save Schedule'}
         </button>
+        {editingRuleId && (
+          <button
+            type="button"
+            onClick={() => {
+              setEditingRuleId(null);
+              setForm({ title: '', type: 'income', amount: '', category: '', frequency: 'monthly', dayOfMonth: 1, month: 1 });
+            }}
+            className="btn-secondary full-width"
+          >
+            Cancel
+          </button>
+        )}
       </form>
 
-      
-      <ul className="scheduled-list">
-        {rules.map((r) => (
-          <li key={r._id}>
-            <span>
-              {r.title} — every {r.frequency}{' '}
-              {r.frequency === 'monthly'
-                ? `on day ${r.dayOfMonth}`
-                : `on ${r.month}/${r.dayOfMonth}`}
-            </span>
-          </li>
-        ))}
-      </ul>
+      <h2>Your Scheduled Transactions</h2>
+      {rules.length === 0 ? (
+        <p>No schedules yet.</p>
+      ) : (
+        <table className="scheduled-table">
+          <thead>
+            <tr>
+              <th>Title</th>
+              <th>Type</th>
+              <th>Amount</th>
+              <th>Category</th>
+              <th>Frequency</th>
+              <th>Next Run</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {rules.map((rule) => (
+              <tr key={rule._id}>
+                <td>{rule.title}</td>
+                <td>{rule.type}</td>
+                <td>{rule.amount}</td>
+                <td>{rule.category}</td>
+                <td>
+                  {rule.frequency === 'monthly'
+                    ? `Monthly (day ${rule.dayOfMonth})`
+                    : `Yearly (${rule.month}/${rule.dayOfMonth})`}
+                </td>
+                <td>{new Date(rule.nextRun).toLocaleDateString()}</td>
+                <td>
+                  <button onClick={() => startEditing(rule)}>Edit</button>
+                  <button onClick={() => deleteRule(rule._id)}>Delete</button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
     </div>
   );
 }

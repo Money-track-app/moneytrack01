@@ -24,7 +24,13 @@ const PORT = process.env.PORT || 5000;
 const SECRET = process.env.JWT_SECRET || 'secretkey';
 
 // Global Middleware
-app.use(cors({ origin: 'http://localhost:5173', credentials: true }));
+// old
+app.use(cors({
+  origin: 'http://localhost:5173',
+  credentials: true
+}));
+
+
 app.use(express.json());
 app.use(session({
   secret: process.env.SESSION_SECRET || 'sessionSecret123',

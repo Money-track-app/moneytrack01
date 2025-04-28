@@ -6,4 +6,5 @@ const authenticate = require('../middleware/authenticate'); // ✅ already exist
 // GET /api/reports
 router.get('/', authenticate, getReport);
 
+
 module.exports = router;
