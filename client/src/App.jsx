@@ -7,7 +7,7 @@ import Dashboard from './pages/dashboard';
 import Categories from './pages/categories';
 import AddTransaction from './pages/addtransaction';
 import Reports from './pages/reports';
-import Recurring from './pages/recurring';
+import Scheduled from './pages/scheduled';
 import Settings from './pages/settings';
 import Receipts from './pages/receipts';
 
@@ -66,10 +66,10 @@ function App() {
           }
         />
         <Route
-          path="/recurring"
+          path="/scheduled"
           element={
             <DashboardLayout>
-              <Recurring />
+              <Scheduled />
             </DashboardLayout>
           }
         />
