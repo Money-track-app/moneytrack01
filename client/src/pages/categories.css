@@ -1,75 +1,59 @@
-.categories-page {
-    max-width: 600px;
-    margin: 80px auto 0;
-    background-color: #fff;
-    padding: 30px;
-    border-radius: 12px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-  }
-  
-  .categories-page h2 {
-    text-align: center;
-    margin-bottom: 30px;
-    color: #1e1e2f;
-  }
-  
-  .tabs {
-    display: flex;
-    justify-content: center;
-    margin-bottom: 20px;
-    gap: 10px;
-  }
-  
-  .tabs button {
-    padding: 10px 20px;
-    border: none;
-    background-color: #ddd;
-    cursor: pointer;
-    border-radius: 6px;
-    font-weight: bold;
-    transition: 0.3s;
-  }
-  
-  .tabs button.active {
-    background-color: #1a1a2e;
-    color: white;
-  }
-  
-  .category-form {
-    display: flex;
-    gap: 10px;
-    margin-bottom: 20px;
-  }
-  
-  .category-form input {
-    flex: 1;
-    padding: 10px;
-    border: 1px solid #ccc;
-    border-radius: 6px;
-  }
-  
-  .category-form button {
-    padding: 10px 20px;
-    background-color: #1a1a2e;
-    color: white;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-  }
-  
-  .category-form button:hover {
-    background-color: #16213e;
-  }
-  
-  .category-table table {
-    width: 100%;
-    border-collapse: collapse;
-  }
-  
-  .category-table th,
-  .category-table td {
-    padding: 12px;
-    border: 1px solid #ddd;
-    text-align: left;
-  }
-  
+/* client/src/components/categories.css */
+.categories-container {
+  max-width: 600px;
+  margin: 2rem auto;
+  padding: 1rem;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.categories-container h2 {
+  margin-bottom: 1rem;
+  font-size: 1.5rem;
+  text-align: center;
+}
+
+.categories-form {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.categories-form input {
+  flex: 1;
+  padding: 0.5rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.categories-form button {
+  padding: 0.5rem 1rem;
+  background-color: #4caf50;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.categories-form button:hover {
+  background-color: #45a049;
+}
+
+.error {
+  color: #d9534f;
+  margin-bottom: 1rem;
+  text-align: center;
+}
+
+.categories-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.categories-list li {
+  padding: 0.5rem 0;
+  border-bottom: 1px solid #eee;
+}

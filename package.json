@@ -12,6 +12,8 @@
     },
     "dependencies": {
         "jspdf": "^3.0.1",
-        "jspdf-autotable": "^5.0.2"
+        "jspdf-autotable": "^5.0.2",
+        "nodemailer": "^6.10.1",
+        "sib-api-v3-sdk": "^8.5.0"
     }
 }
