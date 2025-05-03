@@ -3,18 +3,21 @@ import './App.css';
 import { BrowserRouter as Router, Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 import { useEffect } from 'react';
 
+// Context Provider
+import { CategoryProvider } from './context/categorycontext';
+
 // Pages
-import AuthPage     from './pages/auth';
-import Dashboard    from './pages/dashboard';
-import Categories   from './pages/categories';
+import AuthPage       from './pages/auth';
+import Dashboard      from './pages/dashboard';
+import Categories     from './pages/categories';
 import AddTransaction from './pages/addtransaction';
-import Reports      from './pages/reports';
-import Scheduled    from './pages/scheduled';
-import Settings     from './pages/settings';
-import Receipts     from './pages/receipts';
+import Reports        from './pages/reports';
+import Scheduled      from './pages/scheduled';
+import Settings       from './pages/settings';
+import Receipts       from './pages/receipts';
 
 // Layout
-import Sidebar      from './components/sidebar';
+import Sidebar        from './components/sidebar';
 
 // Component to grab `?token=…` and stash it
 function TokenHandler() {
@@ -46,73 +49,75 @@ function DashboardLayout({ children }) {
 
 function App() {
   return (
-    <Router>
-      {/* handle OAuth token if present */}
-      <TokenHandler />
+    <CategoryProvider>
+      <Router>
+        {/* handle OAuth token if present */}
+        <TokenHandler />
 
-      <Routes>
-        {/* Auth Page */}
-        <Route path="/" element={<AuthPage />} />
+        <Routes>
+          {/* Auth Page */}
+          <Route path="/" element={<AuthPage />} />
 
-        {/* All protected pages in sidebar layout */}
-        <Route
-          path="/dashboard"
-          element={
-            <DashboardLayout>
-              <Dashboard />
-            </DashboardLayout>
-          }
-        />
-        <Route
-          path="/categories"
-          element={
-            <DashboardLayout>
-              <Categories />
-            </DashboardLayout>
-          }
-        />
-        <Route
-          path="/add-transaction"
-          element={
-            <DashboardLayout>
-              <AddTransaction />
-            </DashboardLayout>
-          }
-        />
-        <Route
-          path="/reports"
-          element={
-            <DashboardLayout>
-              <Reports />
-            </DashboardLayout>
-          }
-        />
-        <Route
-          path="/scheduled"
-          element={
-            <DashboardLayout>
-              <Scheduled />
-            </DashboardLayout>
-          }
-        />
-        <Route
-          path="/settings"
-          element={
-            <DashboardLayout>
-              <Settings />
-            </DashboardLayout>
-          }
-        />
-        <Route
-          path="/receipts"
-          element={
-            <DashboardLayout>
-              <Receipts />
-            </DashboardLayout>
-          }
-        />
-      </Routes>
-    </Router>
+          {/* All protected pages in sidebar layout */}
+          <Route
+            path="/dashboard"
+            element={
+              <DashboardLayout>
+                <Dashboard />
+              </DashboardLayout>
+            }
+          />
+          <Route
+            path="/categories"
+            element={
+              <DashboardLayout>
+                <Categories />
+              </DashboardLayout>
+            }
+          />
+          <Route
+            path="/add-transaction"
+            element={
+              <DashboardLayout>
+                <AddTransaction />
+              </DashboardLayout>
+            }
+          />
+          <Route
+            path="/reports"
+            element={
+              <DashboardLayout>
+                <Reports />
+              </DashboardLayout>
+            }
+          />
+          <Route
+            path="/scheduled"
+            element={
+              <DashboardLayout>
+                <Scheduled />
+              </DashboardLayout>
+            }
+          />
+          <Route
+            path="/settings"
+            element={
+              <DashboardLayout>
+                <Settings />
+              </DashboardLayout>
+            }
+          />
+          <Route
+            path="/receipts"
+            element={
+              <DashboardLayout>
+                <Receipts />
+              </DashboardLayout>
+            }
+          />
+        </Routes>
+      </Router>
+    </CategoryProvider>
   );
 }
 

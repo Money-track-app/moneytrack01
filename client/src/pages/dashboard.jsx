@@ -9,10 +9,11 @@ export default function Dashboard() {
     totalBalance: 0,
     incomeThisMonth: 0,
     expensesThisMonth: 0,
-    netProfitLoss: 0,
-    upcomingScheduled: '—'
+    netProfitLoss: 0
   });
+  const [upcomingScheduled, setUpcomingScheduled] = useState(null);
 
+  // Fetch financial summary
   useEffect(() => {
     const token = localStorage.getItem('token');
     async function fetchSummary() {
@@ -25,19 +26,40 @@ export default function Dashboard() {
         });
         if (!res.ok) throw new Error(`Failed to fetch summary: ${res.status}`);
         const data = await res.json();
-        // Map backend fields to summary state
         setSummary({
-          totalBalance: data.balance ?? 0,
-          incomeThisMonth: data.totalIncome ?? 0,
+          totalBalance:    data.balance        ?? 0,
+          incomeThisMonth: data.totalIncome    ?? 0,
           expensesThisMonth: data.totalExpenses ?? 0,
-          netProfitLoss: data.balance ?? 0,
-          upcomingScheduled: '—'
+          netProfitLoss:   data.balance        ?? 0
         });
       } catch (err) {
         console.error(err);
       }
     }
     fetchSummary();
+  }, []);
+
+  // Fetch upcoming schedule
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    async function fetchUpcoming() {
+      try {
+        const res = await fetch(`${API_URL}/api/scheduled`, {
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`
+          }
+        });
+        if (!res.ok) throw new Error(`Failed to fetch scheduled: ${res.status}`);
+        const data = await res.json();
+        if (Array.isArray(data) && data.length > 0) {
+          setUpcomingScheduled(data[0].amount);
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    }
+    fetchUpcoming();
   }, []);
 
   return (
@@ -61,7 +83,7 @@ export default function Dashboard() {
         </div>
         <div className="card">
           <h3>Upcoming Scheduled</h3>
-          <p>{summary.upcomingScheduled}</p>
+          <p>{upcomingScheduled != null ? `$${upcomingScheduled.toFixed(2)}` : '—'}</p>
         </div>
       </div>
     </div>

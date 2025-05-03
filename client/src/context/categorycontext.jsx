@@ -1,16 +1,21 @@
-import React, { createContext, useState, useEffect } from 'react';
+/* eslint-disable react-refresh/only-export-components */
 
-const API_URL = 'http://localhost:5000';  // ← your server
+// client/src/context/categorycontext.jsx
+import React, { createContext, useState, useCallback, useEffect } from 'react';
 
-const CategoryContext = createContext({
+const API_URL = 'http://localhost:5000';
+
+// named export of context
+export const CategoryContext = createContext({
   categories: [],
-  fetchCategories: () => Promise.resolve()
+  fetchCategories: () => Promise.resolve([])
 });
 
+// provider component
 export function CategoryProvider({ children }) {
   const [categories, setCategories] = useState([]);
 
-  const fetchCategories = async () => {
+  const fetchCategories = useCallback(async () => {
     try {
       const token = localStorage.getItem('token');
       const res = await fetch(`${API_URL}/api/categories`, {
@@ -19,18 +24,20 @@ export function CategoryProvider({ children }) {
           Authorization: `Bearer ${token}`
         }
       });
-      if (!res.ok) throw new Error('Fetch failed');
+      if (!res.ok) throw new Error(`Fetch failed: ${res.status}`);
       const data = await res.json();
       setCategories(data);
+      return data;
     } catch (err) {
       console.error('Category fetch error:', err);
+      return [];
     }
-  };
+  }, []);
 
-  // initial load
+  // load categories on mount
   useEffect(() => {
     fetchCategories();
-  }, []);
+  }, [fetchCategories]);
 
   return (
     <CategoryContext.Provider value={{ categories, fetchCategories }}>
@@ -38,5 +45,3 @@ export function CategoryProvider({ children }) {
     </CategoryContext.Provider>
   );
 }
-
-export default CategoryContext;
