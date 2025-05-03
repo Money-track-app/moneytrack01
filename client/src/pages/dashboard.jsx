@@ -1,36 +1,69 @@
-import { useEffect } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
-import './dashboard.css';
+// client/src/pages/Dashboard.jsx
+import React, { useEffect, useState } from 'react';
+import './Dashboard.css';
 
+const API_URL = 'http://localhost:5000';
 
-const Dashboard = () => {
-  const location = useLocation();
-  const navigate = useNavigate();
+export default function Dashboard() {
+  const [summary, setSummary] = useState({
+    totalBalance: 0,
+    incomeThisMonth: 0,
+    expensesThisMonth: 0,
+    netProfitLoss: 0,
+    upcomingScheduled: '—'
+  });
 
   useEffect(() => {
-    const params = new URLSearchParams(location.search);
-    const tokenFromURL = params.get('token');
-
-    if (tokenFromURL) {
-      localStorage.setItem('token', tokenFromURL);
-      window.history.replaceState({}, document.title, '/dashboard');
-    }
-
     const token = localStorage.getItem('token');
-    if (!token) {
-      navigate('/');
+    async function fetchSummary() {
+      try {
+        const res = await fetch(`${API_URL}/api/reports`, {
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`
+          }
+        });
+        if (!res.ok) throw new Error(`Failed to fetch summary: ${res.status}`);
+        const data = await res.json();
+        // Map backend fields to summary state
+        setSummary({
+          totalBalance: data.balance ?? 0,
+          incomeThisMonth: data.totalIncome ?? 0,
+          expensesThisMonth: data.totalExpenses ?? 0,
+          netProfitLoss: data.balance ?? 0,
+          upcomingScheduled: '—'
+        });
+      } catch (err) {
+        console.error(err);
+      }
     }
-  }, [location, navigate]);
+    fetchSummary();
+  }, []);
 
   return (
-    <div className="dashboard">
-      <h2>🎉 Welcome to your Dashboard!</h2>
-      <p>You are successfully signed in.</p>
+    <div className="dashboard-container">
+      <div className="summary-cards">
+        <div className="card">
+          <h3>Total Balance</h3>
+          <p>${summary.totalBalance.toFixed(2)}</p>
+        </div>
+        <div className="card">
+          <h3>Income This Month</h3>
+          <p>+ ${summary.incomeThisMonth.toFixed(2)}</p>
+        </div>
+        <div className="card">
+          <h3>Expenses This Month</h3>
+          <p>- ${summary.expensesThisMonth.toFixed(2)}</p>
+        </div>
+        <div className="card">
+          <h3>Net Profit/Loss</h3>
+          <p>${summary.netProfitLoss.toFixed(2)}</p>
+        </div>
+        <div className="card">
+          <h3>Upcoming Scheduled</h3>
+          <p>{summary.upcomingScheduled}</p>
+        </div>
+      </div>
     </div>
   );
-};
-
-export default Dashboard;
-
-
-
+}

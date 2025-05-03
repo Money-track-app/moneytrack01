@@ -167,7 +167,7 @@ export default function Settings() {
             required
           />
         </label>
-        <button type="submit" className="btn-save">Save</button>
+        <button type="submit" className="btn-save">Update</button>
         <button type="button" className="btn-logout" onClick={handleLogoutClick}>Logout</button>
       </form>
 

@@ -83,6 +83,7 @@ const receiptsRoutes    = require('./routes/receiptsroutes');
 const profileRoutes     = require('./routes/profileroutes');
 const categoryRoutes = require('./routes/categoriesroutes');
 
+
 // Scheduled routes (support CJS and ES default)
 let scheduledRoutes = require('./routes/scheduledroutes');
 if (scheduledRoutes && typeof scheduledRoutes.default === 'function') {
@@ -96,6 +97,7 @@ app.use('/api/receipts', receiptsRoutes);
 app.use('/api/scheduled', authenticate, scheduledRoutes);
 app.use('/api/profile',     authenticate, profileRoutes);
 app.use('/api/categories', categoryRoutes);
+
 
 // Root route
 app.get('/', (req, res) => res.send('Backend is running!'));
