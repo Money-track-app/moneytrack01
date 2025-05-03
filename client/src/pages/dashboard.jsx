@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useContext } from 'react';
 import './Dashboard.css';
 import {
   Chart as ChartJS,
@@ -12,7 +12,10 @@ import {
 } from 'chart.js';
 import { Line, Pie } from 'react-chartjs-2';
 
-// Register chart components
+// Import CategoryContext
+import { CategoryContext } from '../context/categorycontext';
+
+// Register Chart.js components
 ChartJS.register(
   CategoryScale,
   LinearScale,
@@ -25,7 +28,18 @@ ChartJS.register(
 
 const API_URL = 'http://localhost:5000';
 
+// A small palette of bright, attractive colors
+const brightColors = [
+  '#FF6384', // pink
+  '#36A2EB', // blue
+  '#FFCE56', // yellow
+  '#4BC0C0', // teal
+  '#9966FF', // purple
+  '#FF9F40', // orange
+];
+
 export default function Dashboard() {
+  const { categories } = useContext(CategoryContext);
   const [summary, setSummary] = useState({
     totalBalance: 0,
     incomeThisMonth: 0,
@@ -35,9 +49,9 @@ export default function Dashboard() {
   const [transactions, setTransactions] = useState([]);
   const [scheduled, setScheduled] = useState([]);
 
-  // Fetch summary, transactions, and scheduled data
   useEffect(() => {
     const token = localStorage.getItem('token');
+
     async function fetchData() {
       try {
         const [sumRes, txRes, schedRes] = await Promise.all([
@@ -67,19 +81,28 @@ export default function Dashboard() {
           netProfitLoss: (sumData.totalIncome ?? 0) - (sumData.totalExpenses ?? 0),
         });
         setTransactions(txData);
-        setScheduled(schedData);
+        setScheduled(Array.isArray(schedData) ? schedData : []);
       } catch (err) {
         console.error('Dashboard fetch error:', err);
       }
     }
+
     fetchData();
   }, []);
 
-  // Prepare data for trend chart (last 30 days)
+  // Helper to get category name
+  const getCategoryName = id => {
+    if (!id) return 'Uncategorized';
+    const cat = categories.find(c => c._id === id);
+    return cat ? cat.name : 'Uncategorized';
+  };
+
+  // Build 30-day income/expense trend
+  const today = new Date();
   const dates = [];
   const incomeByDate = {};
   const expenseByDate = {};
-  const today = new Date();
+
   for (let i = 29; i >= 0; i--) {
     const d = new Date(today);
     d.setDate(d.getDate() - i);
@@ -88,6 +111,7 @@ export default function Dashboard() {
     incomeByDate[key] = 0;
     expenseByDate[key] = 0;
   }
+
   transactions.forEach((tx) => {
     const dateKey = new Date(tx.date).toISOString().split('T')[0];
     if (incomeByDate[dateKey] !== undefined) {
@@ -95,32 +119,47 @@ export default function Dashboard() {
       else expenseByDate[dateKey] += tx.amount;
     }
   });
+
   const trendChartData = {
     labels: dates,
     datasets: [
-      { label: 'Income', data: dates.map((d) => incomeByDate[d]), borderColor: 'green', fill: false },
-      { label: 'Expenses', data: dates.map((d) => expenseByDate[d]), borderColor: 'red', fill: false },
+      { label: 'Income', data: dates.map((d) => incomeByDate[d]), fill: false },
+      { label: 'Expenses', data: dates.map((d) => expenseByDate[d]), fill: false },
     ],
   };
 
-  // Prepare data for category pie chart
+  // Build category pie chart with category names and bright colors
   const categoryTotals = {};
   transactions.forEach((tx) => {
     if (tx.type === 'expense') {
-      categoryTotals[tx.category] = (categoryTotals[tx.category] || 0) + tx.amount;
+      const name = getCategoryName(tx.category);
+      categoryTotals[name] = (categoryTotals[name] || 0) + tx.amount;
     }
   });
   const catLabels = Object.keys(categoryTotals);
   const catValues = Object.values(categoryTotals);
   const categoryChartData = {
     labels: catLabels,
-    datasets: [{ label: 'Expenses by Category', data: catValues, backgroundColor: catLabels.map(() => 'rgba(0,0,0,0.1)') }],
+    datasets: [
+      {
+        label: 'Expenses by Category',
+        data: catValues,
+        backgroundColor: catLabels.map((_, idx) => brightColors[idx % brightColors.length]),
+      },
+    ],
   };
 
-  // Slice recent transactions and upcoming scheduled items
+  // Recent 5 transactions
   const recentTx = transactions.slice(0, 5);
+
+  // Upcoming 5 scheduled items based on nextRun
   const upcoming = scheduled
-    .sort((a, b) => new Date(a.date) - new Date(b.date))
+    .map((item) => ({
+      ...item,
+      _parsedDate: new Date(item.nextRun),
+    }))
+    .filter((it) => !isNaN(it._parsedDate.getTime()))
+    .sort((a, b) => a._parsedDate - b._parsedDate)
     .slice(0, 5);
 
   return (
@@ -157,7 +196,7 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Details Lists */}
+      {/* Details */}
       <div className="details-container">
         <div className="list-section">
           <h4>Recent Transactions</h4>
@@ -171,27 +210,35 @@ export default function Dashboard() {
               </tr>
             </thead>
             <tbody>
-              {recentTx.map((tx) => (
-                <tr key={tx._id}>
-                  <td>{new Date(tx.date).toLocaleDateString()}</td>
-                  <td>{tx.description}</td>
-                  <td>{tx.category}</td>
-                  <td className={tx.type === 'income' ? 'positive' : 'negative'}>
-                    {tx.type === 'income' ? '+' : '-'}${tx.amount.toFixed(2)}
-                  </td>
-                </tr>
-              ))}
+              {recentTx.map((tx) => {
+                const d = new Date(tx.date);
+                return (
+                  <tr key={tx._id}>
+                    <td>{isNaN(d.getTime()) ? '—' : d.toLocaleDateString()}</td>
+                    <td>{tx.description}</td>
+                    <td>{getCategoryName(tx.category)}</td>
+                    <td className={tx.type === 'income' ? 'positive' : 'negative'}>
+                      {tx.type === 'income' ? '+' : '-'}${tx.amount.toFixed(2)}
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
+
         <div className="list-section">
           <h4>Upcoming Scheduled</h4>
           <ul>
-            {upcoming.map((item) => (
-              <li key={item._id}>
-                {new Date(item.date).toLocaleDateString()} – ${item.amount.toFixed(2)}
-              </li>
-            ))}
+            {upcoming.length > 0 ? (
+              upcoming.map((item) => (
+                <li key={item._id}>
+                  {item._parsedDate.toLocaleDateString()} – ${item.amount.toFixed(2)}
+                </li>
+              ))
+            ) : (
+              <li>No upcoming items</li>
+            )}
           </ul>
         </div>
       </div>

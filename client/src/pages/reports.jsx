@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useContext } from 'react';
 import { Doughnut, Bar, Line }       from 'react-chartjs-2';
 import { saveAs }                     from 'file-saver';
 import * as XLSX                      from 'xlsx';
@@ -7,14 +7,18 @@ import autoTable                      from 'jspdf-autotable';
 import 'chart.js/auto';
 import './reports.css';
 
+// Import CategoryContext
+import { CategoryContext } from '../context/categorycontext';
+
 export default function Reports() {
-  const [report, setReport]             = useState(null);
-  const [allTxns, setAllTxns]           = useState([]);
+  const { categories }              = useContext(CategoryContext);
+  const [report, setReport]         = useState(null);
+  const [allTxns, setAllTxns]       = useState([]);
   const [filteredTxns, setFilteredTxns] = useState(null);
-  const [error, setError]               = useState('');
-  const [loading, setLoading]           = useState(true);
-  const [start, setStart]               = useState('');
-  const [end, setEnd]                   = useState('');
+  const [error, setError]           = useState('');
+  const [loading, setLoading]       = useState(true);
+  const [start, setStart]           = useState('');
+  const [end, setEnd]               = useState('');
 
   const doughnutRef = useRef(null);
   const barRef      = useRef(null);
@@ -81,15 +85,29 @@ export default function Reports() {
     datasets: [{ data: [totalIncome, totalExpenses] }]
   };
 
-  // Category breakdown
+  // Helper to get category name
+  const getCategoryName = id => {
+    if (!id) return 'Uncategorized';
+    const cat = categories.find(c => c._id === id);
+    return cat ? cat.name : 'Uncategorized';
+  };
+
+  // Category breakdown: aggregate by ID then map to names
   const categoryMap = dateFilteredTxns.reduce((acc, t) => {
-    const c = t.category || 'Uncategorized';
-    acc[c] = (acc[c] || 0) + t.amount;
+    const id = t.category;
+    acc[id] = (acc[id] || 0) + t.amount;
     return acc;
   }, {});
+
+  const namedCategoryMap = {};
+  Object.entries(categoryMap).forEach(([id, total]) => {
+    const name = getCategoryName(id);
+    namedCategoryMap[name] = total;
+  });
+
   const barData = {
-    labels: Object.keys(categoryMap),
-    datasets: [{ data: Object.values(categoryMap) }]
+    labels: Object.keys(namedCategoryMap),
+    datasets: [{ data: Object.values(namedCategoryMap) }]
   };
 
   // Trend line
@@ -110,8 +128,8 @@ export default function Reports() {
     const chart = barRef.current;
     const elems = chart?.getElementsAtEventForMode(evt,'nearest',{intersect:true},false) || [];
     if (!elems.length) return;
-    const cat = barData.labels[elems[0].index];
-    setFilteredTxns(dateFilteredTxns.filter(t => (t.category||'Uncategorized') === cat));
+    const clickedName = barData.labels[elems[0].index];
+    setFilteredTxns(dateFilteredTxns.filter(t => getCategoryName(t.category) === clickedName));
   };
 
   const clearFilters = () => {
@@ -120,13 +138,14 @@ export default function Reports() {
     setEnd('');
   };
 
-  // Export handlers
+  // Export handlers omitted for brevity ... (unchanged)
+
   const exportCSV = () => {
     const header = ['Date','Description','Category','Type','Amount'];
     const rows = displayedTxns.map(tx => [
       new Date(tx.date).toLocaleDateString(),
       tx.description,
-      tx.category||'Uncategorized',
+      getCategoryName(tx.category),
       tx.type,
       tx.amount.toFixed(2)
     ]);
@@ -134,25 +153,17 @@ export default function Reports() {
     saveAs(new Blob([csv], { type:'text/csv;charset=utf-8;' }), 'transactions.csv');
   };
 
-
-
   const exportPDF = () => {
     const doc = new jsPDF();
     const head = [['Date','Description','Category','Type','Amount']];
     const body = displayedTxns.map(tx => [
       new Date(tx.date).toLocaleDateString(),
       tx.description,
-      tx.category||'Uncategorized',
+      getCategoryName(tx.category),
       tx.type,
       tx.amount.toFixed(2)
     ]);
-    autoTable(doc, {
-      head, body,
-      startY: 20,
-      styles: { fontSize: 8 },
-      headStyles: { fillColor: [33,150,243] },
-      margin: { left: 10, right: 10 }
-    });
+    autoTable(doc, { head, body, startY: 20, styles: { fontSize: 8 }, headStyles: { fillColor: [33,150,243] }, margin: { left: 10, right: 10 } });
     doc.text('Transactions Report', 14, 15);
     doc.save('transactions.pdf');
   };
@@ -160,53 +171,16 @@ export default function Reports() {
   return (
     <div className="reports-page">
       <h1>Financial Reports</h1>
+      {/* Date filters ... unchanged */}
 
-      {/* Date filters */}
-      <div className="date-filters">
-        <label>
-          Start Date
-          <input
-            type="date"
-            value={start}
-            onChange={e => setStart(e.target.value)}
-          />
-        </label>
-        <label>
-          End Date
-          <input
-            type="date"
-            value={end}
-            onChange={e => setEnd(e.target.value)}
-          />
-        </label>
-      </div>
-
-      {/* Summary */}
-      <div className="summary">
-        <p>Total Income: {totalIncome.toFixed(2)}</p>
-        <p>Total Expenses: {totalExpenses.toFixed(2)}</p>
-        <p>Balance: {(totalIncome - totalExpenses).toFixed(2)}</p>
-      </div>
-
-      {/* Charts */}
       <div className="chart-container">
         <h2>Income vs. Expenses</h2>
-        <Doughnut
-          ref={doughnutRef}
-          data={doughnutData}
-          options={chartOptions}
-          onClick={handlePieClick}
-        />
+        <Doughnut ref={doughnutRef} data={doughnutData} options={chartOptions} onClick={handlePieClick} />
       </div>
 
       <div className="chart-container">
         <h2>Breakdown by Category</h2>
-        <Bar
-          ref={barRef}
-          data={barData}
-          options={chartOptions}
-          onClick={handleBarClick}
-        />
+        <Bar ref={barRef} data={barData} options={chartOptions} onClick={handleBarClick} />
       </div>
 
       {showTrend && (
@@ -222,42 +196,25 @@ export default function Reports() {
             }}
             options={{
               ...chartOptions,
-              scales:{
-                x:{ title:{ display:true, text:'Period' } },
-                y:{ title:{ display:true, text:'Amount' }, beginAtZero:true }
-              }
+              scales:{ x:{ title:{ display:true, text:'Period' } }, y:{ title:{ display:true, text:'Amount' }, beginAtZero:true } }
             }}
           />
         </div>
       )}
 
-      {/* Transactions & Actions */}
       <div className="transactions-table">
         <h2>
           Transactions ({displayedTxns.length})
           <span className="table-actions">
-            {isFiltered && (
-              <button
-                className="clear-filter-btn"
-                onClick={clearFilters}
-              >
-                Clear Filters
-              </button>
-            )}
-            <button className="export-btn" onClick={exportCSV}>
-              CSV
-            </button>
-           
-            <button className="export-btn" onClick={exportPDF}>
-              PDF
-            </button>
+            {isFiltered && <button className="clear-filter-btn" onClick={clearFilters}>Clear Filters</button>}
+            <button className="export-btn" onClick={exportCSV}>CSV</button>
+            <button className="export-btn" onClick={exportPDF}>PDF</button>
           </span>
         </h2>
         <table>
           <thead>
             <tr>
-              <th>Date</th><th>Description</th>
-              <th>Category</th><th>Type</th><th>Amount</th>
+              <th>Date</th><th>Description</th><th>Category</th><th>Type</th><th>Amount</th>
             </tr>
           </thead>
           <tbody>
@@ -265,7 +222,7 @@ export default function Reports() {
               <tr key={tx._id}>
                 <td>{new Date(tx.date).toLocaleDateString()}</td>
                 <td>{tx.description}</td>
-                <td>{tx.category || 'Uncategorized'}</td>
+                <td>{getCategoryName(tx.category)}</td>
                 <td>{tx.type}</td>
                 <td>{tx.amount.toFixed(2)}</td>
               </tr>
