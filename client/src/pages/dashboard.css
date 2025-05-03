@@ -1,29 +1,115 @@
-* client/src/pages/Dashboard.css */
+/* Final Dashboard.css - Compact summary cards and constrained upcoming card */
 .dashboard-container {
-  padding: 2rem;
+  width: 100%;
+  margin: 0;
+  padding: 1rem 1.5rem;
+  font-family: 'Segoe UI', sans-serif;
+  box-sizing: border-box;
+}
+
+.summary-section {
+  max-width: 900px;
+  margin: 0 auto 2rem;
 }
 
 .summary-cards {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 1.5rem;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 2rem;
+  margin-bottom: 2rem; /* added spacing below summary cards */
 }
 
 .card {
   background: #ffffff;
-  padding: 1.5rem;
-  border-radius: 12px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  padding: 0.75rem;
+  border-radius: 6px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 100px; /* reduced height */
 }
 
 .card h3 {
-  margin: 0 0 0.75rem;
-  font-size: 1rem;
-  color: #333;
+  font-size: 0.85rem;
+  color: #555;
+  margin-bottom: 0.25rem;
 }
 
 .card p {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #222;
   margin: 0;
-  font-size: 1.5rem;
-  font-weight: bold;
+}
+
+.card.upcoming-scheduled {
+  max-width: 180px;
+  min-height: 90px;
+  padding: 0.5rem;
+  justify-self: start;
+}
+
+.charts-container,
+.details-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.chart-item,
+.list-section {
+  background: #ffffff;
+  padding: 1rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+  display: flex;
+  flex-direction: column;
+  max-height: 450px;
+  overflow: hidden;
+}
+
+.chart-item h4,
+.list-section h4 {
+  font-size: 1.1rem;
+  color: #333;
+  margin-bottom: 0.75rem;
+}
+
+.chart-item canvas {
+  width: 100% !important;
+  max-height: 300px !important;
+  margin: 0 auto;
+}
+
+.list-section table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.list-section th,
+.list-section td {
+  padding: 0.5rem;
+  border-bottom: 1px solid #e0e0e0;
+  text-align: left;
+}
+
+@media (max-width: 768px) {
+  .summary-section {
+    margin-bottom: 1.5rem;
+  }
+  .summary-cards,
+  .charts-container,
+  .details-container {
+    grid-template-columns: 1fr;
+  }
+  .card,
+  .card.upcoming-scheduled {
+    max-width: none;
+    min-height: auto;
+    padding: 0.75rem;
+  }
 }
