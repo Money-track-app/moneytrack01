@@ -1,9 +1,8 @@
-// client/src/pages/Categories.jsx
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect, useContext, useCallback } from 'react';
 import './categories.css';
 import { CategoryContext } from '../context/categorycontext';
+import { FaSearch, FaCog } from 'react-icons/fa';
 import { saveAs } from 'file-saver';
-import * as XLSX from 'xlsx';
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
 
@@ -14,54 +13,36 @@ export default function Categories() {
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [openMenu, setOpenMenu] = useState(null);
+  const [selectedCats, setSelectedCats] = useState([]);
 
   const token = localStorage.getItem('token');
 
-  // Load categories
-  useEffect(() => {
-    fetchCategories();
-  }, [fetchCategories]);
-
-  // Load transactions
-  useEffect(() => {
-    async function loadTransactions() {
-      setLoading(true);
-      try {
-        const res = await fetch(`${API_URL}/api/transactions`, {
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`
-          }
-        });
-        if (!res.ok) throw new Error(`Error ${res.status}`);
-        const data = await res.json();
-        setTransactions(data);
-        setError('');
-      } catch (err) {
-        console.error(err);
-        setError('Could not load transactions');
-      } finally {
-        setLoading(false);
-      }
+  const loadTransactions = useCallback(async () => {
+    setLoading(true);
+    try {
+      const res = await fetch(`${API_URL}/api/transactions`, {
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }
+      });
+      if (!res.ok) throw new Error(`Error ${res.status}`);
+      setTransactions(await res.json());
+      setError('');
+    } catch {
+      setError('Could not load transactions');
+    } finally {
+      setLoading(false);
     }
-    loadTransactions();
   }, [token]);
 
-  if (loading) return <p className="center">Loading…</p>;
-  if (error)   return <p className="center error">{error}</p>;
+  useEffect(() => {
+    fetchCategories();
+    loadTransactions();
+  }, [fetchCategories, loadTransactions]);
 
-  // Group transactions by category
-  const grouped = categories.map(cat => ({
-    ...cat,
-    transactions: transactions.filter(tx => tx.category === cat._id)
-  }));
-
-  // Transactions without category
-  const uncategorized = transactions.filter(tx => !tx.category);
-
-  // Export handlers
+  // Export CSV
   const exportCategoryCSV = (cat) => {
-    const header = ['Date','Description','Amount'];
+    const header = ['Date', 'Description', 'Amount'];
     const rows = cat.transactions.map(tx => [
       new Date(tx.date).toLocaleDateString(),
       tx.description,
@@ -71,90 +52,150 @@ export default function Categories() {
     saveAs(new Blob([csv], { type: 'text/csv;charset=utf-8;' }), `${cat.name}_transactions.csv`);
   };
 
+  // Export PDF
   const exportCategoryPDF = (cat) => {
     const doc = new jsPDF();
-    const head = [['Date','Description','Amount']];
-    const body = cat.transactions.map(tx => [
-      new Date(tx.date).toLocaleDateString(),
-      tx.description,
-      tx.amount.toFixed(2)
-    ]);
-    autoTable(doc, { head, body, startY: 20 });
+    autoTable(doc, {
+      head: [['Date', 'Description', 'Amount']],
+      body: cat.transactions.map(tx => [
+        new Date(tx.date).toLocaleDateString(),
+        tx.description,
+        tx.amount.toFixed(2)
+      ]),
+      startY: 20
+    });
     doc.text(cat.name, 14, 15);
     doc.save(`${cat.name}_transactions.pdf`);
   };
 
-  const exportAllCSV = () => {
-    const header = ['Category','Date','Description','Amount'];
-    const rows = grouped.flatMap(cat =>
-      cat.transactions.map(tx => [
-        cat.name,
-        new Date(tx.date).toLocaleDateString(),
-        tx.description,
-        tx.amount.toFixed(2)
-      ])
-    );
-    if (uncategorized.length) {
-      rows.push(...uncategorized.map(tx => [
-        'Uncategorized',
-        new Date(tx.date).toLocaleDateString(),
-        tx.description,
-        tx.amount.toFixed(2)
-      ]));
-    }
-    const csv = [header, ...rows].map(r => r.join(',')).join('\n');
-    saveAs(new Blob([csv], { type: 'text/csv;charset=utf-8;' }), `all_categories_transactions.csv`);
+  // Delete single category
+  const handleDeleteCategory = async (id) => {
+    if (!window.confirm('Delete this category and its transactions?')) return;
+    await fetch(`${API_URL}/api/categories/${id}`, {
+      method: 'DELETE',
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    fetchCategories();
+    loadTransactions();
+    setOpenMenu(null);
   };
 
-  const exportAllPDF = () => {
-    const doc = new jsPDF();
-    const head = [['Category','Date','Description','Amount']];
-    const body = grouped.flatMap(cat =>
-      cat.transactions.map(tx => [
-        cat.name,
-        new Date(tx.date).toLocaleDateString(),
-        tx.description,
-        tx.amount.toFixed(2)
-      ])
-    );
-    if (uncategorized.length) {
-      body.push(...uncategorized.map(tx => [
-        'Uncategorized',
-        new Date(tx.date).toLocaleDateString(),
-        tx.description,
-        tx.amount.toFixed(2)
-      ]));
-    }
-    autoTable(doc, { head, body, startY: 20, styles: { fontSize: 8 }, headStyles: { fillColor: [33,150,243] } });
-    doc.text('All Categories Transactions', 14, 15);
-    doc.save('all_categories_transactions.pdf');
+  // Delete single transaction
+  const handleDeleteTransaction = async (txId) => {
+    if (!window.confirm('Delete this transaction?')) return;
+    await fetch(`${API_URL}/api/transactions/${txId}`, {
+      method: 'DELETE',
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    loadTransactions();
   };
+
+  // Select categories
+  const handleSelectCat = (id) => {
+    setSelectedCats(prev =>
+      prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
+    );
+  };
+
+  // Delete selected categories
+  const handleDeleteSelected = async () => {
+    if (!selectedCats.length) return;
+    if (!window.confirm(`Delete ${selectedCats.length} selected categories and their transactions?`)) return;
+    await Promise.all(
+      selectedCats.map(id =>
+        fetch(`${API_URL}/api/categories/${id}`, {
+          method: 'DELETE',
+          headers: { Authorization: `Bearer ${token}` }
+        })
+      )
+    );
+    setSelectedCats([]);
+    fetchCategories();
+    loadTransactions();
+  };
+
+  if (loading) return <p className="center">Loading…</p>;
+  if (error) return <p className="center error">{error}</p>;
+
+  const filteredCats = categories.filter(cat =>
+    cat.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+  const grouped = filteredCats.map(cat => ({
+    ...cat,
+    transactions: transactions.filter(tx => tx.category === cat._id)
+  }));
 
   return (
     <div className="categories-container">
       <h1>Categories</h1>
-      <div className="all-export-buttons">
-        <button className="export-btn" onClick={exportAllCSV}>Export All CSV</button>
-        <button className="export-btn" onClick={exportAllPDF}>Export All PDF</button>
+      <div className="toolbar">
+        <div className="search-wrap">
+          <FaSearch className="search-icon" />
+          <input
+            type="text"
+            className="search-input"
+            placeholder="Search categories..."
+            value={searchTerm}
+            onChange={e => setSearchTerm(e.target.value)}
+          />
+        </div>
+        <button
+          className="btn delete-all"
+          onClick={handleDeleteSelected}
+          disabled={!selectedCats.length}
+        >
+          Delete Selected ({selectedCats.length})
+        </button>
       </div>
 
       {grouped.map(cat => (
         <section key={cat._id} className="category-section">
           <div className="section-header">
-            <h2>{cat.name} ({cat.type})</h2>
-            <div className="export-buttons">
-              <button onClick={() => exportCategoryCSV(cat)}>CSV</button>
-              <button onClick={() => exportCategoryPDF(cat)}>PDF</button>
+            <label>
+              <input
+                type="checkbox"
+                checked={selectedCats.includes(cat._id)}
+                onChange={() => handleSelectCat(cat._id)}
+              />{' '}{cat.name}
+            </label>
+            <div className="actions">
+              <FaCog
+                className="settings-btn"
+                onClick={() => setOpenMenu(openMenu === cat._id ? null : cat._id)}
+              />
+              {openMenu === cat._id && (
+                <div className="settings-menu">
+                  <button
+                    className="btn small delete"
+                    onClick={() => handleDeleteCategory(cat._id)}
+                  >
+                    Delete
+                  </button>
+                  <button
+                    className="btn small export"
+                    onClick={() => { exportCategoryCSV(cat); setOpenMenu(null); }}
+                  >
+                    CSV
+                  </button>
+                  <button
+                    className="btn small export"
+                    onClick={() => { exportCategoryPDF(cat); setOpenMenu(null); }}
+                  >
+                    PDF
+                  </button>
+                </div>
+              )}
             </div>
           </div>
 
-          {cat.transactions.length > 0 ? (
+          {cat.transactions.length ? (
             <table className="categories-table">
               <thead>
                 <tr>
                   <th>Date</th>
                   <th>Description</th>
                   <th>Amount</th>
+                  <th>Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -163,6 +204,14 @@ export default function Categories() {
                     <td data-label="Date">{new Date(tx.date).toLocaleDateString()}</td>
                     <td data-label="Description">{tx.description}</td>
                     <td data-label="Amount">${tx.amount.toFixed(2)}</td>
+                    <td>
+                      <button
+                        className="btn small delete"
+                        onClick={() => handleDeleteTransaction(tx._id)}
+                      >
+                        Delete
+                      </button>
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -172,36 +221,6 @@ export default function Categories() {
           )}
         </section>
       ))}
-
-      {uncategorized.length > 0 && (
-        <section className="category-section">
-          <div className="section-header">
-            <h2>Uncategorized</h2>
-            <div className="export-buttons">
-              <button onClick={() => exportCategoryCSV({ name: 'Uncategorized', transactions: uncategorized })}>CSV</button>
-              <button onClick={() => exportCategoryPDF({ name: 'Uncategorized', transactions: uncategorized })}>PDF</button>
-            </div>
-          </div>
-          <table className="categories-table">
-            <thead>
-              <tr>
-                <th>Date</th>
-                <th>Description</th>
-                <th>Amount</th>
-              </tr>
-            </thead>
-            <tbody>
-              {uncategorized.map(tx => (
-                <tr key={tx._id}>
-                  <td data-label="Date">{new Date(tx.date).toLocaleDateString()}</td>
-                  <td data-label="Description">{tx.description}</td>
-                  <td data-label="Amount">${tx.amount.toFixed(2)}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </section>
-      )}
     </div>
   );
 }
