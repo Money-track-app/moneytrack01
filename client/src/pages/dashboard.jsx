@@ -11,11 +11,9 @@ import {
   Legend,
 } from 'chart.js';
 import { Line, Pie } from 'react-chartjs-2';
-
-// Import CategoryContext
 import { CategoryContext } from '../context/categorycontext';
+import { SearchContext } from '../context/searchcontext'; // ✅ Added
 
-// Register Chart.js components
 ChartJS.register(
   CategoryScale,
   LinearScale,
@@ -28,18 +26,13 @@ ChartJS.register(
 
 const API_URL = 'http://localhost:5000';
 
-// A small palette of bright, attractive colors
 const brightColors = [
-  '#FF6384', // pink
-  '#36A2EB', // blue
-  '#FFCE56', // yellow
-  '#4BC0C0', // teal
-  '#9966FF', // purple
-  '#FF9F40', // orange
+  '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40',
 ];
 
 export default function Dashboard() {
   const { categories } = useContext(CategoryContext);
+  const { searchTerm } = useContext(SearchContext); // ✅ Get global search
   const [summary, setSummary] = useState({
     totalBalance: 0,
     incomeThisMonth: 0,
@@ -66,9 +59,7 @@ export default function Dashboard() {
           }),
         ]);
 
-        if (!sumRes.ok) throw new Error(`Summary fetch failed: ${sumRes.status}`);
-        if (!txRes.ok) throw new Error(`Transactions fetch failed: ${txRes.status}`);
-        if (!schedRes.ok) throw new Error(`Scheduled fetch failed: ${schedRes.status}`);
+        if (!sumRes.ok || !txRes.ok || !schedRes.ok) throw new Error("Fetch failed");
 
         const sumData = await sumRes.json();
         const txData = await txRes.json();
@@ -90,14 +81,33 @@ export default function Dashboard() {
     fetchData();
   }, []);
 
-  // Helper to get category name
   const getCategoryName = id => {
     if (!id) return 'Uncategorized';
     const cat = categories.find(c => c._id === id);
     return cat ? cat.name : 'Uncategorized';
   };
 
-  // Build 30-day income/expense trend
+  // Filtered data based on search term
+  const search = searchTerm.toLowerCase();
+  const filteredTx = transactions.filter(tx =>
+    tx.description?.toLowerCase().includes(search) ||
+    getCategoryName(tx.category)?.toLowerCase().includes(search)
+  );
+
+  const filteredScheduled = scheduled.filter(item =>
+    item.title?.toLowerCase().includes(search) ||
+    item.category?.toLowerCase().includes(search)
+  );
+
+  // Recent & upcoming (after filter)
+  const recentTx = filteredTx.slice(0, 5);
+  const upcoming = filteredScheduled
+    .map((item) => ({ ...item, _parsedDate: new Date(item.nextRun) }))
+    .filter((it) => !isNaN(it._parsedDate.getTime()))
+    .sort((a, b) => a._parsedDate - b._parsedDate)
+    .slice(0, 5);
+
+  // Trend chart data
   const today = new Date();
   const dates = [];
   const incomeByDate = {};
@@ -128,7 +138,6 @@ export default function Dashboard() {
     ],
   };
 
-  // Build category pie chart with category names and bright colors
   const categoryTotals = {};
   transactions.forEach((tx) => {
     if (tx.type === 'expense') {
@@ -136,6 +145,7 @@ export default function Dashboard() {
       categoryTotals[name] = (categoryTotals[name] || 0) + tx.amount;
     }
   });
+
   const catLabels = Object.keys(categoryTotals);
   const catValues = Object.values(categoryTotals);
   const categoryChartData = {
@@ -149,39 +159,14 @@ export default function Dashboard() {
     ],
   };
 
-  // Recent 5 transactions
-  const recentTx = transactions.slice(0, 5);
-
-  // Upcoming 5 scheduled items based on nextRun
-  const upcoming = scheduled
-    .map((item) => ({
-      ...item,
-      _parsedDate: new Date(item.nextRun),
-    }))
-    .filter((it) => !isNaN(it._parsedDate.getTime()))
-    .sort((a, b) => a._parsedDate - b._parsedDate)
-    .slice(0, 5);
-
   return (
     <div className="dashboard-container">
       {/* Summary Cards */}
       <div className="summary-cards">
-        <div className="card">
-          <h3>Total Balance</h3>
-          <p>${summary.totalBalance.toFixed(2)}</p>
-        </div>
-        <div className="card">
-          <h3>Income This Month</h3>
-          <p>+ ${summary.incomeThisMonth.toFixed(2)}</p>
-        </div>
-        <div className="card">
-          <h3>Expenses This Month</h3>
-          <p>- ${summary.expensesThisMonth.toFixed(2)}</p>
-        </div>
-        <div className="card">
-          <h3>Net Profit/Loss</h3>
-          <p>${summary.netProfitLoss.toFixed(2)}</p>
-        </div>
+        <div className="card"><h3>Total Balance</h3><p>${summary.totalBalance.toFixed(2)}</p></div>
+        <div className="card"><h3>Income This Month</h3><p>+ ${summary.incomeThisMonth.toFixed(2)}</p></div>
+        <div className="card"><h3>Expenses This Month</h3><p>- ${summary.expensesThisMonth.toFixed(2)}</p></div>
+        <div className="card"><h3>Net Profit/Loss</h3><p>${summary.netProfitLoss.toFixed(2)}</p></div>
       </div>
 
       {/* Charts */}
@@ -203,10 +188,7 @@ export default function Dashboard() {
           <table>
             <thead>
               <tr>
-                <th>Date</th>
-                <th>Description</th>
-                <th>Category</th>
-                <th>Amount</th>
+                <th>Date</th><th>Description</th><th>Category</th><th>Amount</th>
               </tr>
             </thead>
             <tbody>

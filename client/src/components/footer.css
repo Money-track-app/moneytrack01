@@ -1,0 +1,42 @@
+/* client/src/components/footer.css */
+
+.app-footer {
+    padding: 1.5rem 2rem;
+    text-align: center;
+    background-color: #1abc9c; /* your chosen color */
+    font-family: 'Inter', sans-serif;
+    font-size: 0.9rem;
+    color: #ffffff;
+    margin-top: auto;
+    box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.04);
+    position: relative;
+    z-index: 10;
+  }
+  
+  .app-footer p {
+    margin: 0;
+    line-height: 1.6;
+    letter-spacing: 0.3px;
+    color: #ffffff;
+  }
+  
+  .footer-links {
+    margin-top: 0.6rem;
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+    flex-wrap: wrap;
+  }
+  
+  .footer-links a {
+    text-decoration: none;
+    color: #ffffff;
+    font-weight: 500;
+    font-size: 0.9rem;
+    transition: color 0.3s ease;
+  }
+  
+  .footer-links a:hover {
+    color: #ecf0f1; /* soft white-gray on hover */
+  }
+  

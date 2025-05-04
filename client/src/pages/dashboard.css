@@ -173,3 +173,15 @@ body {
     grid-template-columns: 1fr;
   }
 }
+
+.dashboard-container h1,
+.dashboard-container h2,
+.dashboard-container h3,
+.dashboard-container h4,
+.dashboard-container h5,
+.dashboard-container h6,
+.dashboard-container label,
+.dashboard-container th,
+.dashboard-container td {
+  color: #212529;
+}

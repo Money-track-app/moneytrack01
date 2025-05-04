@@ -1,13 +1,14 @@
-// src/pages/receipts.jsx
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import axios from 'axios';
 import './receipts.css';
+import { SearchContext } from '../context/searchcontext';
 
 export default function Receipts() {
   const [receipts, setReceipts]   = useState([]);
   const [filter, setFilter]       = useState('all');
   const [urls, setUrls]           = useState({});        // { [id]: objectURL }
   const [categoryMap, setCategoryMap] = useState({});    // { [categoryId]: categoryName }
+  const { searchTerm } = useContext(SearchContext);
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -18,7 +19,6 @@ export default function Receipts() {
       .then(res => {
         const map = {};
         res.data.forEach(cat => {
-          // Adjust property name if your category model uses _id or id
           map[cat._id || cat.id] = cat.name;
         });
         setCategoryMap(map);
@@ -48,9 +48,17 @@ export default function Receipts() {
 
   // Unique list of category IDs from receipts
   const categoryIds = Array.from(new Set(receipts.map(r => r.category)));
-  const filtered = filter === 'all'
+
+  // Filtered by dropdown
+  const filteredByCategory = filter === 'all'
     ? receipts
     : receipts.filter(r => r.category === filter);
+
+  // Apply search term on top
+  const search = searchTerm.toLowerCase();
+  const filtered = filteredByCategory.filter(r =>
+    categoryMap[r.category]?.toLowerCase().includes(search)
+  );
 
   if (receipts.length === 0) {
     return (

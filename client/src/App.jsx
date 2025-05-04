@@ -1,25 +1,30 @@
-// client/src/App.jsx
-import './App.css';
+import './app.css';
 import { BrowserRouter as Router, Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 import { useEffect } from 'react';
 
-// Context Provider
+// Context Providers
 import { CategoryProvider } from './context/categorycontext';
+import { SearchProvider } from './context/searchprovider';
 
 // Pages
-import AuthPage       from './pages/auth';
-import Dashboard      from './pages/dashboard';
-import Categories     from './pages/categories';
-import AddTransaction from './pages/addtransaction';
-import Reports        from './pages/reports';
-import Scheduled      from './pages/scheduled';
-import Settings       from './pages/settings';
-import Receipts       from './pages/receipts';
+import auth from './pages/auth';
+import dashboard from './pages/dashboard';
+import categories from './pages/categories';
+import addtransaction from './pages/addtransaction';
+import reports from './pages/reports';
+import scheduled from './pages/scheduled';
+import settings from './pages/settings';
+import receipts from './pages/receipts';
+import upgrade from './pages/upgrade';   // ✅ Premium Upgrade page
+import support from './pages/support';   // ✅ Help & Support page
 
-// Layout
-import Sidebar        from './components/sidebar';
 
-// Component to grab `?token=…` and stash it
+// Layout Components
+import sidebar from './components/sidebar';
+import header from './components/header';
+import footer from './components/footer';
+
+// Handle OAuth token in URL
 function TokenHandler() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -28,9 +33,7 @@ function TokenHandler() {
     const params = new URLSearchParams(location.search);
     const token = params.get('token');
     if (token) {
-      // Save JWT
       localStorage.setItem('token', token);
-      // Remove query params from URL
       navigate(location.pathname, { replace: true });
     }
   }, [location, navigate]);
@@ -38,85 +41,55 @@ function TokenHandler() {
   return null;
 }
 
+// Dashboard layout
 function DashboardLayout({ children }) {
+  const Sidebar = sidebar;
+  const Header = header;
+  const Footer = footer;
+
   return (
     <div className="layout-wrapper">
       <Sidebar />
-      <main className="main-content">{children}</main>
+      <div className="main-content">
+        <Header />
+        {children}
+        <Footer />
+      </div>
     </div>
   );
 }
 
 function App() {
+  const Auth = auth;
+  const Dashboard = dashboard;
+  const Categories = categories;
+  const AddTransaction = addtransaction;
+  const Reports = reports;
+  const Scheduled = scheduled;
+  const Settings = settings;
+  const Receipts = receipts;
+  const Upgrade = upgrade;
+  const Support = support;
+
   return (
     <CategoryProvider>
-      <Router>
-        {/* handle OAuth token if present */}
-        <TokenHandler />
-
-        <Routes>
-          {/* Auth Page */}
-          <Route path="/" element={<AuthPage />} />
-
-          {/* All protected pages in sidebar layout */}
-          <Route
-            path="/dashboard"
-            element={
-              <DashboardLayout>
-                <Dashboard />
-              </DashboardLayout>
-            }
-          />
-          <Route
-            path="/categories"
-            element={
-              <DashboardLayout>
-                <Categories />
-              </DashboardLayout>
-            }
-          />
-          <Route
-            path="/add-transaction"
-            element={
-              <DashboardLayout>
-                <AddTransaction />
-              </DashboardLayout>
-            }
-          />
-          <Route
-            path="/reports"
-            element={
-              <DashboardLayout>
-                <Reports />
-              </DashboardLayout>
-            }
-          />
-          <Route
-            path="/scheduled"
-            element={
-              <DashboardLayout>
-                <Scheduled />
-              </DashboardLayout>
-            }
-          />
-          <Route
-            path="/settings"
-            element={
-              <DashboardLayout>
-                <Settings />
-              </DashboardLayout>
-            }
-          />
-          <Route
-            path="/receipts"
-            element={
-              <DashboardLayout>
-                <Receipts />
-              </DashboardLayout>
-            }
-          />
-        </Routes>
-      </Router>
+      <SearchProvider>
+        <Router>
+          <TokenHandler />
+          <Routes>
+            <Route path="/" element={<Auth />} />
+            <Route path="/dashboard" element={<DashboardLayout><Dashboard /></DashboardLayout>} />
+            <Route path="/categories" element={<DashboardLayout><Categories /></DashboardLayout>} />
+            <Route path="/add-transaction" element={<DashboardLayout><AddTransaction /></DashboardLayout>} />
+            <Route path="/reports" element={<DashboardLayout><Reports /></DashboardLayout>} />
+            <Route path="/scheduled" element={<DashboardLayout><Scheduled /></DashboardLayout>} />
+            <Route path="/settings" element={<DashboardLayout><Settings /></DashboardLayout>} />
+            <Route path="/receipts" element={<DashboardLayout><Receipts /></DashboardLayout>} />
+            <Route path="/upgrade" element={<DashboardLayout><Upgrade /></DashboardLayout>} /> {/* ✅ Upgrade Route */}
+            <Route path="/support" element={<DashboardLayout><Support /></DashboardLayout>} /> {/* ✅ Help Route */}
+          </Routes>
+        </Router>
+      </SearchProvider>
     </CategoryProvider>
   );
 }

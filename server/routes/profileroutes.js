@@ -1,7 +1,7 @@
-// server/routes/profileroutes.js
 const express = require('express');
 const multer = require('multer');
 const path = require('path');
+const fs = require('fs');
 const authenticate = require('../middleware/authenticate');
 const User = require('../models/user');
 
@@ -10,50 +10,71 @@ const router = express.Router();
 // Multer setup
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, path.join(__dirname, '../uploads/avatars'));
+    const uploadPath = path.join(__dirname, '../uploads/avatars');
+    fs.mkdirSync(uploadPath, { recursive: true }); // Ensure directory exists
+    cb(null, uploadPath);
   },
   filename: (req, file, cb) => {
-    const ext = path.extname(file.originalname);
+    const ext = path.extname(file.originalname).toLowerCase(); // .png, .jpg
     cb(null, `${req.user.id}${ext}`);
   }
 });
 const upload = multer({ storage });
 
-// GET profile
+// Middleware to handle single file upload
+const uploadAvatar = upload.single('avatar');
+
+// GET /api/profile
 router.get('/', authenticate, async (req, res) => {
   try {
     const user = await User.findById(req.user.id).select('fullName businessName avatarUrl email');
     if (!user) return res.status(404).json({ error: 'User not found' });
     return res.json(user);
   } catch (err) {
-    console.error('Profile fetch error:', err);
+    console.error('❌ Profile fetch error:', err);
     return res.status(500).json({ error: 'Server error' });
   }
 });
 
-// POST update profile
-router.post('/', authenticate, upload.single('avatar'), async (req, res) => {
-  try {
-    console.log('--- PROFILE UPDATE REQUEST ---');
-    console.log('req.body:', req.body);
-    console.log('req.file:', req.file);
+// POST /api/profile
+router.post('/', authenticate, (req, res, next) => {
+  uploadAvatar(req, res, (err) => {
+    if (err) {
+      console.error('❌ Multer upload error:', err);
+      return res.status(400).json({ error: 'Failed to upload image' });
+    }
+    next();
+  });
+}, async (req, res) => {
+  console.log('📦 req.body:', req.body);
+  console.log('🖼️ req.file:', req.file);
 
+  try {
     const user = await User.findById(req.user.id);
     if (!user) return res.status(404).json({ error: 'User not found' });
 
     user.fullName = req.body.fullName || user.fullName;
     user.businessName = req.body.businessName || user.businessName;
-    if (req.file) {
-      user.avatarUrl = `/uploads/avatars/${req.file.filename}`;
+
+    // Handle avatar removal
+    if (req.body.clearAvatar === 'true') {
+      if (user.avatarUrl) {
+        const oldPath = path.join(__dirname, '..', user.avatarUrl);
+        if (fs.existsSync(oldPath)) fs.unlinkSync(oldPath);
+      }
+      user.avatarUrl = '';
+      console.log('🗑️ Avatar cleared');
     }
 
-    console.log('Saving user with:', {
-      fullName: user.fullName,
-      businessName: user.businessName,
-      avatarUrl: user.avatarUrl
-    });
+    // Handle new avatar upload
+    if (req.file) {
+      const ext = path.extname(req.file.originalname).toLowerCase();
+      user.avatarUrl = `/uploads/avatars/${req.user.id}${ext}`;
+      console.log('✅ Avatar set to:', user.avatarUrl);
+    }
 
     await user.save();
+    console.log('✅ User saved:', user);
 
     return res.json({
       fullName: user.fullName,
@@ -62,7 +83,7 @@ router.post('/', authenticate, upload.single('avatar'), async (req, res) => {
       email: user.email
     });
   } catch (err) {
-    console.error('Profile update error:', err);
+    console.error('❌ Profile update error:', err);
     return res.status(500).json({ error: 'Could not update profile' });
   }
 });

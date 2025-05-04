@@ -1,4 +1,3 @@
-/* Sidebar.css */
 :root {
   --sidebar-width: 240px;
   --gradient-start: #2c3e50;
@@ -26,19 +25,40 @@
   border-radius: 0 12px 12px 0;
 }
 
+/* Sidebar toggle behavior on smaller screens */
 .sidebar.open {
   transform: translateX(0);
 }
 
-.sidebar-title {
-  font-family: 'Orbitron', sans-serif;
-  font-size: 24px;
-  letter-spacing: 2px;
-  text-align: center;
-  margin-bottom: 40px;
-  color: var(--accent-color);
+/* --- Logo and App Title --- */
+.sidebar-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  margin-bottom: 30px;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
+.sidebar-logo {
+  height: 42px;
+  width: 42px;
+  object-fit: contain;
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+}
+
+.sidebar-title {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 20px;
+  font-weight: bold;
+  letter-spacing: 1.5px;
+  color: var(--accent-color);
+  margin: 0;
+}
+
+/* --- Menu Navigation --- */
 .menu {
   list-style: none;
   padding: 0;
@@ -73,6 +93,7 @@
   color: #ffffff;
 }
 
+/* --- Toggle Button for Mobile --- */
 .toggle-btn {
   display: none;
   position: fixed;
@@ -98,6 +119,7 @@
   background: var(--gradient-start);
 }
 
+/* --- Responsive for Small Screens --- */
 @media (max-width: 768px) {
   .sidebar {
     transform: translateX(-100%);

@@ -1,0 +1,25 @@
+.support-page {
+    max-width: 800px;
+    margin: 2rem auto;
+    padding: 1.5rem;
+    font-family: 'Inter', sans-serif;
+    line-height: 1.6;
+  }
+  
+  .support-page h1 {
+    font-size: 2rem;
+    margin-bottom: 1rem;
+    color: #2c3e50;
+  }
+  
+  .support-page h2 {
+    font-size: 1.25rem;
+    margin-top: 2rem;
+    color: #1abc9c;
+  }
+  
+  .support-page a {
+    color: #1abc9c;
+    text-decoration: none;
+  }
+  

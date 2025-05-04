@@ -1,6 +1,7 @@
 import './scheduled.css';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useContext } from 'react';
 import { FiEdit2, FiTrash2 } from 'react-icons/fi';
+import { SearchContext } from '../context/searchcontext';
 
 const API_URL = 'http://localhost:5000';
 
@@ -18,6 +19,7 @@ export default function Scheduled() {
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
   const [editingRuleId, setEditingRuleId] = useState(null);
+  const { searchTerm } = useContext(SearchContext);
 
   const token = localStorage.getItem('token');
 
@@ -127,6 +129,11 @@ export default function Scheduled() {
     { value: 11, name: 'November' },
     { value: 12, name: 'December' },
   ];
+
+  const filteredRules = rules.filter(r =>
+    r.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    r.category.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   return (
     <div className="scheduled-container">
@@ -256,8 +263,8 @@ export default function Scheduled() {
 
       <h2 style={{ textAlign: 'left', marginTop: '2rem' }}>Your Scheduled Transactions</h2>
 
-      {rules.length === 0 ? (
-        <p>No schedules yet.</p>
+      {filteredRules.length === 0 ? (
+        <p>No schedules found.</p>
       ) : (
         <table className="scheduled-table">
           <thead>
@@ -272,7 +279,7 @@ export default function Scheduled() {
             </tr>
           </thead>
           <tbody>
-            {rules.map((rule) => (
+            {filteredRules.map((rule) => (
               <tr key={rule._id}>
                 <td data-label="Title">{rule.title}</td>
                 <td data-label="Type">{rule.type}</td>

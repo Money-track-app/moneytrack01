@@ -30,7 +30,7 @@ body {
   padding: calc(var(--spacing) * 2);
   border-radius: var(--border-radius);
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
-  border-top: 4px solid var(--color-primary);
+  border-top: 4px solid #1abc9c
 }
 
 .add-transaction-container h2 {
@@ -129,7 +129,7 @@ body {
 }
 
 .transaction-form button:hover {
-  background-color: #1669c1;
+  background-color: #1abc9c;
   transform: translateY(-1px);
 }
 
@@ -144,4 +144,14 @@ body {
     box-shadow: none;
     border-radius: 0;
   }
+}
+
+.add-transaction-container h1,
+.add-transaction-container h2,
+.add-transaction-container h3,
+.add-transaction-container h4,
+.add-transaction-container h5,
+.add-transaction-container h6,
+.add-transaction-container label {
+  color: #212529;
 }

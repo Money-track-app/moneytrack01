@@ -1,4 +1,4 @@
-// Sidebar.jsx
+// client/src/components/Sidebar.jsx
 import React, { useState, useEffect } from "react";
 import { NavLink } from "react-router-dom";
 import "./Sidebar.css";
@@ -6,7 +6,7 @@ import "./Sidebar.css";
 const Sidebar = () => {
   const [isOpen, setIsOpen] = useState(false);
 
-  // Auto-close sidebar if screen is resized to desktop
+  // Auto-close sidebar if resized to desktop width
   useEffect(() => {
     const handleResize = () => {
       if (window.innerWidth > 768) {
@@ -27,8 +27,12 @@ const Sidebar = () => {
         ☰
       </button>
 
-      <aside className={`sidebar ${isOpen ? "open" : ""}`}>  
-        <h2 className="sidebar-title">MoneyTrack</h2>
+      <aside className={`sidebar ${isOpen ? "open" : ""}`}>
+        <div className="sidebar-header">
+          <img src="/Logo2.jpg" alt="MoneyTrack Logo" className="sidebar-logo" />
+          <span className="sidebar-title">MoneyTrack</span>
+        </div>
+
         <ul className="menu">
           <li>
             <NavLink

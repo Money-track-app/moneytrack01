@@ -6,44 +6,87 @@ const API_URL = 'http://localhost:5000';
 
 export default function Settings() {
   const navigate = useNavigate();
-  const [profile, setProfile] = useState({ fullName: '', businessName: '', avatarUrl: '', email: '' });
+  const [profile, setProfile] = useState({
+    fullName: '',
+    businessName: '',
+    avatarUrl: '',
+    email: '',
+  });
   const [avatarFile, setAvatarFile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState('');
   const [showConfirmLogout, setShowConfirmLogout] = useState(false);
   const fileInputRef = useRef(null);
 
+  // Load profile
   useEffect(() => {
-    (async () => {
-      const token = localStorage.getItem('token');
-      try {
-        const res = await fetch(`${API_URL}/api/profile`, {
-          headers: { Authorization: `Bearer ${token}` },
+    const token = localStorage.getItem('token');
+    fetch(`${API_URL}/api/profile`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then(res => res.json())
+      .then(data => {
+        setProfile({
+          fullName: data.fullName || '',
+          businessName: data.businessName || '',
+          avatarUrl: data.avatarUrl || '',
+          email: data.email || '',
         });
-        if (res.ok) {
-          const data = await res.json();
-          setProfile({
-            fullName: data.fullName || '',
-            businessName: data.businessName || '',
-            avatarUrl: data.avatarUrl || '',
-            email: data.email || '',
-          });
-        }
-      } catch (err) {
-        console.error('Failed to load profile', err);
-      } finally {
-        setLoading(false);
-      }
-    })();
+      })
+      .catch(err => console.error('Failed to load profile', err))
+      .finally(() => setLoading(false));
   }, []);
 
+  // Submit profile changes
   const handleSubmit = async (e) => {
     e.preventDefault();
     const token = localStorage.getItem('token');
     const formData = new FormData();
     formData.append('fullName', profile.fullName);
     formData.append('businessName', profile.businessName);
-    if (avatarFile) formData.append('avatar', avatarFile);
+
+    if (avatarFile) {
+      formData.append('avatar', avatarFile);
+    } else if (!profile.avatarUrl) {
+      formData.append('clearAvatar', 'true');
+    }
+
+    try {
+      const res = await fetch(`${API_URL}/api/profile`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          // ⚠️ DO NOT set Content-Type manually
+        },
+        body: formData,
+      });
+
+      const updated = await res.json();
+
+      if (res.ok) {
+        setProfile({
+          fullName: updated.fullName || '',
+          businessName: updated.businessName || '',
+          avatarUrl: updated.avatarUrl || '',
+          email: updated.email || '',
+        });
+        setAvatarFile(null);
+        setMessage('✅ Profile updated successfully!');
+      } else {
+        setMessage(updated.error || '❌ Failed to update profile.');
+      }
+    } catch (err) {
+      console.error('❌ Update error:', err);
+      setMessage('❌ Network error while updating profile.');
+    }
+  };
+
+  const handleDeleteAvatar = async () => {
+    const token = localStorage.getItem('token');
+    const formData = new FormData();
+    formData.append('fullName', profile.fullName);
+    formData.append('businessName', profile.businessName);
+    formData.append('clearAvatar', 'true');
 
     try {
       const res = await fetch(`${API_URL}/api/profile`, {
@@ -51,50 +94,22 @@ export default function Settings() {
         headers: { Authorization: `Bearer ${token}` },
         body: formData,
       });
+
+      const updated = await res.json();
+
       if (res.ok) {
-        const updated = await res.json();
-        setProfile({
-          ...profile,
-          fullName: updated.fullName || '',
-          businessName: updated.businessName || '',
-          avatarUrl: updated.avatarUrl || '',
-          email: updated.email || profile.email,
-        });
-        setMessage('✅ Profile updated successfully!');
-      } else {
-        setMessage('❌ Error saving profile.');
+        setProfile(prev => ({ ...prev, avatarUrl: updated.avatarUrl || '' }));
+        setAvatarFile(null);
+        setMessage('🗑️ Avatar removed');
       }
     } catch (err) {
-      console.error('Update failed', err);
-      setMessage('❌ Error saving profile.');
+      console.error('Delete avatar failed', err);
     }
   };
 
   const handleLogout = () => {
     localStorage.removeItem('token');
     navigate('/', { replace: true });
-  };
-
-  const handleDeleteAvatar = async () => {
-    try {
-      const token = localStorage.getItem('token');
-      const formData = new FormData();
-      formData.append('fullName', profile.fullName);
-      formData.append('businessName', profile.businessName);
-      const res = await fetch(`${API_URL}/api/profile`, {
-        method: 'POST',
-        headers: { Authorization: `Bearer ${token}` },
-        body: formData,
-      });
-      if (res.ok) {
-        setMessage('🗑️ Avatar removed');
-        const updated = await res.json();
-        setProfile(prev => ({ ...prev, avatarUrl: updated.avatarUrl || '' }));
-        setAvatarFile(null);
-      }
-    } catch (err) {
-      console.error('Delete avatar failed', err);
-    }
   };
 
   if (loading) return <p className="settings-loading">Loading…</p>;
@@ -110,7 +125,7 @@ export default function Settings() {
           {avatarFile ? (
             <img src={URL.createObjectURL(avatarFile)} alt="Avatar preview" className="avatar-img" />
           ) : profile.avatarUrl ? (
-            <img src={`${API_URL}${profile.avatarUrl}?_=${Date.now()}`} alt="Avatar" className="avatar-img" />
+            <img src={`${API_URL}${profile.avatarUrl}`} alt="Avatar" className="avatar-img" />
           ) : (
             <div className="avatar-placeholder">📷</div>
           )}
@@ -120,6 +135,7 @@ export default function Settings() {
         {(profile.avatarUrl || avatarFile) && (
           <button type="button" className="avatar-delete" onClick={handleDeleteAvatar}>×</button>
         )}
+
         <input
           type="file"
           accept="image/*"

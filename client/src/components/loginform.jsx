@@ -51,7 +51,7 @@ const LoginForm = () => {
       <form className="auth-form" onSubmit={handleLogin}>
         <img src="/logo.png" alt="MoneyTrack Logo" className="auth-logo-large" />
 
-        <p className="form-subtitle">Login to continue managing your finances</p>
+    
 
         <div className="input-wrapper">
           <span className="input-icon">📧</span>

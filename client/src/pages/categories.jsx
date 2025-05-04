@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useContext, useCallback } from 'react';
 import './categories.css';
 import { CategoryContext } from '../context/categorycontext';
-import { FaSearch, FaCog, FaFileCsv, FaFilePdf } from 'react-icons/fa';
+import { SearchContext } from '../context/searchcontext';
+import { FaCog, FaFileCsv, FaFilePdf } from 'react-icons/fa';
 import { saveAs } from 'file-saver';
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
@@ -10,10 +11,10 @@ const API_URL = 'http://localhost:5000';
 
 export default function Categories() {
   const { categories, fetchCategories } = useContext(CategoryContext);
+  const { searchTerm } = useContext(SearchContext);
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [searchTerm, setSearchTerm] = useState('');
   const [openMenu, setOpenMenu] = useState(null);
   const [selectedCats, setSelectedCats] = useState([]);
   const [selectMode, setSelectMode] = useState(false);
@@ -41,7 +42,6 @@ export default function Categories() {
     loadTransactions();
   }, [fetchCategories, loadTransactions]);
 
-  // Export single category CSV
   const exportCategoryCSV = (cat) => {
     const header = ['Date', 'Description', 'Amount'];
     const rows = cat.transactions.map(tx => [
@@ -53,7 +53,6 @@ export default function Categories() {
     saveAs(new Blob([csv], { type: 'text/csv;charset=utf-8;' }), `${cat.name}_transactions.csv`);
   };
 
-  // Export all categories CSV
   const exportAllCSV = () => {
     const header = ['Category', 'Date', 'Description', 'Amount'];
     const rows = [];
@@ -72,7 +71,6 @@ export default function Categories() {
     saveAs(new Blob([csv], { type: 'text/csv;charset=utf-8;' }), `all_categories_transactions.csv`);
   };
 
-  // Export single category PDF
   const exportCategoryPDF = (cat) => {
     const doc = new jsPDF();
     autoTable(doc, {
@@ -88,7 +86,6 @@ export default function Categories() {
     doc.save(`${cat.name}_transactions.pdf`);
   };
 
-  // Export all categories PDF
   const exportAllPDF = () => {
     const doc = new jsPDF();
     const tableRows = [];
@@ -112,7 +109,6 @@ export default function Categories() {
     doc.save('all_categories_transactions.pdf');
   };
 
-  // Delete single category
   const handleDeleteCategory = async (id) => {
     if (!window.confirm('Delete this category and its transactions?')) return;
     await fetch(`${API_URL}/api/categories/${id}`, {
@@ -124,7 +120,6 @@ export default function Categories() {
     setOpenMenu(null);
   };
 
-  // Delete single transaction
   const handleDeleteTransaction = async (txId) => {
     if (!window.confirm('Delete this transaction?')) return;
     await fetch(`${API_URL}/api/transactions/${txId}`, {
@@ -134,14 +129,12 @@ export default function Categories() {
     loadTransactions();
   };
 
-  // Select categories
   const handleSelectCat = (id) => {
     setSelectedCats(prev =>
       prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
     );
   };
 
-  // Toggle delete selection or exit
   const handleDeleteSelected = async () => {
     if (!selectedCats.length) {
       setSelectMode(false);
@@ -177,18 +170,8 @@ export default function Categories() {
     <div className="categories-container">
       <h1>Categories</h1>
       <div className="toolbar">
-        <div className="search-wrap">
-          <FaSearch className="search-icon" />
-          <input
-            type="text"
-            className="search-input"
-            placeholder="Search categories..."
-            value={searchTerm}
-            onChange={e => setSearchTerm(e.target.value)}
-          />
-        </div>
         {!selectMode && (
-          <> 
+          <>
             <button className="btn export small" onClick={exportAllCSV}>
               <FaFileCsv /> Export All CSV
             </button>

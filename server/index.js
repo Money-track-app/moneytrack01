@@ -76,12 +76,17 @@ app.get('/auth/google/callback',
   }
 );
 
+const path = require('path');
+
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
 // Load routes modules
 const reportRoutes      = require('./routes/reportroutes');
 const transactionRoutes = require('./routes/transactionroutes');
 const receiptsRoutes    = require('./routes/receiptsroutes');
 const profileRoutes     = require('./routes/profileroutes');
 const categoryRoutes = require('./routes/categoriesroutes');
+
 
 
 
