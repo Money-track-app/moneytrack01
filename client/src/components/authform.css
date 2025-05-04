@@ -1,35 +1,202 @@
 .auth-form {
-    text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+  max-width: 400px;
+  margin: 0 auto;
+  text-align: center;
+  font-family: 'Segoe UI', sans-serif;
+}
+
+.form-title {
+  font-size: 24px;
+  color: #1a1a2e;
+  margin-bottom: 4px;
+}
+
+.form-subtitle {
+  font-size: 14px;
+  color: #666;
+  margin-bottom: 12px;
+}
+
+/* Input wrapper for icon inside field */
+.input-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.input-wrapper input {
+  width: 100%;
+  padding: 12px 14px 12px 38px;
+  font-size: 15px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  transition: border 0.3s;
+  box-sizing: border-box;
+}
+
+.input-wrapper input:focus {
+  border-color: #007bff;
+  outline: none;
+}
+
+.input-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 16px;
+  color: #888;
+  pointer-events: none;
+}
+
+/* Main button */
+.primary-btn {
+  background-color: #1a1a2e;
+  color: white;
+  padding: 12px;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background 0.3s;
+  font-weight: 500;
+}
+
+.primary-btn:hover {
+  background-color: #0f3460;
+}
+
+/* Divider line */
+.divider {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #aaa;
+  font-size: 14px;
+  margin: 10px 0;
+  position: relative;
+}
+
+.divider::before,
+.divider::after {
+  content: "";
+  height: 1px;
+  background: #ddd;
+  flex: 1;
+  margin: 0 10px;
+}
+
+/* Google button */
+.google-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  background-color: #1a1a2e;
+  color: white;
+  padding: 12px;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 500;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.google-btn img.google-icon {
+  width: 18px;
+  height: 18px;
+  background-color: white;
+  border-radius: 50%;
+  padding: 2px;
+}
+
+.google-btn:hover {
+  background-color: #0f3460;
+}
+
+/* Error/success message */
+.auth-message {
+  color: #e74c3c;
+  font-size: 14px;
+  margin-top: -6px;
+}
+
+/* Toast Notification */
+.custom-toast {
+  position: fixed;
+  bottom: 30px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 12px 20px;
+  border-radius: 6px;
+  color: white;
+  font-size: 14px;
+  z-index: 999;
+  animation: slideUpFade 0.5s ease;
+}
+
+.custom-toast.success {
+  background-color: #28a745;
+}
+
+.custom-toast.error {
+  background-color: #dc3545;
+}
+
+@keyframes slideUpFade {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(20px);
   }
-  
-  .auth-form input {
-    width: 100%;
-    padding: 12px;
-    margin-bottom: 16px;
-    font-size: 16px;
-    border: 1px solid #ccc;
-    border-radius: 6px;
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
   }
-  
-  .auth-form button {
-    width: 100%;
-    padding: 12px;
-    margin-bottom: 10px;
-    background-color: #1a1a2e;
-    color: white;
-    border: none;
-    border-radius: 6px;
-    font-size: 16px;
-    cursor: pointer;
+}
+
+/* Password Strength Text */
+.password-strength {
+  font-size: 14px;
+  margin-top: -10px;
+  margin-bottom: -4px;
+  font-weight: 500;
+  text-align: left;
+}
+
+.password-strength.weak {
+  color: #dc3545;
+}
+
+.password-strength.medium {
+  color: #ffc107;
+}
+
+.password-strength.strong {
+  color: #28a745;
+}
+
+.auth-logo-large {
+  width: 100px;               /* Base size stays within form width */
+  height: auto;
+  margin: 0 auto 16px;
+  display: block;
+  transform: scale(1.5);      /* Makes logo appear larger */
+  transform-origin: center;
+  animation: fadeInLogo 0.4s ease-in-out;
+}
+
+
+@keyframes fadeInLogo {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
   }
-  
-  .auth-form button:hover {
-    background-color: #16213e;
+  to {
+    opacity: 1;
+    transform: scale(1);
   }
-  
-  .auth-message {
-    color: red;
-    font-size: 14px;
-    margin-top: 10px;
-  }
-  
+}

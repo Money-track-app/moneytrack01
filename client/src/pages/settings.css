@@ -1,26 +1,29 @@
+/* SETTINGS CONTAINER */
 .settings-container {
-  max-width: 480px;
-  margin: 2rem auto;
-  padding: 2rem;
+  max-width: 520px;
+  margin: 3rem auto;
+  padding: 2.5rem;
   background: #ffffff;
-  border-radius: 12px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
-  font-family: 'Segoe UI', sans-serif;
+  border-radius: 16px;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.08);
+  font-family: 'Inter', sans-serif;
+  color: #2d2d2d;
 }
 
-.settings-container h1,
-.settings-container h2 {
+.settings-container h1 {
   text-align: center;
-  margin-bottom: 1.5rem;
-  font-size: 1.8rem;
-  color: #333;
+  margin-bottom: 2rem;
+  font-size: 2rem;
+  font-weight: 600;
+  color: #1a1a1a;
 }
 
+/* AVATAR SECTION */
 .avatar-section {
   position: relative;
   display: flex;
   justify-content: center;
-  margin-bottom: 1.5rem;
+  margin-bottom: 2rem;
 }
 
 .avatar-wrapper {
@@ -29,8 +32,13 @@
   height: 120px;
   border-radius: 50%;
   overflow: hidden;
+  border: 3px solid #e0e0e0;
   cursor: pointer;
-  border: 2px solid #ddd;
+  transition: box-shadow 0.3s ease;
+}
+
+.avatar-wrapper:hover {
+  box-shadow: 0 0 0 4px #007bff33;
 }
 
 .avatar-img,
@@ -41,20 +49,20 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #f0f0f0;
+  background: #f2f2f2;
   font-size: 2rem;
-  color: #666;
+  color: #7d7d7d;
 }
 
 .avatar-overlay {
   position: absolute;
   bottom: 0;
   right: 0;
-  background: rgba(0, 0, 0, 0.6);
+  background: #007bff;
   color: #fff;
-  padding: 6px;
+  padding: 6px 8px;
   border-top-left-radius: 6px;
-  font-size: 1.2rem;
+  font-size: 1rem;
 }
 
 .avatar-input {
@@ -63,78 +71,86 @@
 
 .avatar-delete {
   position: absolute;
-  top: 8px;
-  right: calc(50% - 60px + -8px);
+  top: 6px;
+  right: calc(50% - 60px - 6px);
   background: #ff4d4f;
   border: none;
-  color: #fff;
+  color: white;
   border-radius: 50%;
-  width: 28px;
-  height: 28px;
+  width: 26px;
+  height: 26px;
+  font-size: 1rem;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1rem;
+  box-shadow: 0 0 6px rgba(0, 0, 0, 0.1);
 }
 
+/* FORM */
 .settings-form label {
   display: block;
   margin-bottom: 1rem;
-  color: #444;
+  font-size: 0.95rem;
+  font-weight: 500;
 }
 
 .settings-form input[type="text"],
 .settings-form input[type="email"] {
   width: 100%;
-  padding: 0.6rem;
+  padding: 0.65rem;
   border: 1px solid #ccc;
-  border-radius: 6px;
+  border-radius: 8px;
   font-size: 1rem;
+  background-color: #fafafa;
+  transition: border-color 0.2s;
 }
 
-/* --- Styles for readonly fields (email) --- */
+.settings-form input[type="text"]:focus,
+.settings-form input[type="email"]:focus {
+  border-color: #007bff;
+  outline: none;
+}
+
 .settings-form input[readonly] {
-  background-color: #f9f9f9;
-  color: #777;
+  background-color: #f1f1f1;
+  color: #888;
   cursor: not-allowed;
 }
 
-.btn-save {
+/* BUTTONS */
+.btn-save,
+.btn-logout {
   width: 100%;
   padding: 0.75rem;
-  background-color: #007bff;
-  color: #fff;
   font-size: 1rem;
+  font-weight: 500;
   border: none;
-  border-radius: 6px;
+  border-radius: 8px;
   cursor: pointer;
-  transition: background-color 0.2s;
+  margin-top: 1rem;
+  transition: background-color 0.3s ease;
+}
+
+.btn-save {
+  background-color: #007bff;
+  color: white;
 }
 
 .btn-save:hover {
   background-color: #0056b3;
 }
 
-/* --- Styles for Logout Button --- */
 .btn-logout {
-  width: 100%;
-  margin-top: 1rem;
-  padding: 0.75rem;
-  background-color: #dc3545;
+  background-color: #e74c3c;
   color: white;
-  font-size: 1rem;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: background-color 0.2s;
 }
 
 .btn-logout:hover {
-  background-color: #c82333;
+  background-color: #c0392b;
 }
 
-/* --- Confirmation Popup Styles --- */
+/* LOGOUT CONFIRMATION */
 .confirm-popup {
   position: fixed;
   top: 0;
@@ -145,7 +161,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 1000;
+  z-index: 9999;
 }
 
 .confirm-box {
@@ -153,20 +169,20 @@
   padding: 2rem;
   border-radius: 12px;
   text-align: center;
-  box-shadow: 0px 5px 20px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.2);
   animation: fadeIn 0.3s ease forwards;
 }
 
 .confirm-box p {
   margin-bottom: 1.5rem;
-  font-size: 1.2rem;
+  font-size: 1.1rem;
   color: #333;
 }
 
 .confirm-buttons {
   display: flex;
   justify-content: center;
-  gap: 1rem;
+  gap: 1.2rem;
 }
 
 .confirm-yes,
@@ -189,16 +205,32 @@
 }
 
 .confirm-no {
-  background-color: #dc3545;
+  background-color: #e74c3c;
   color: white;
 }
 
 .confirm-no:hover {
-  background-color: #c82333;
+  background-color: #c0392b;
 }
 
-/* --- Fade in animation for popup --- */
+.settings-notice {
+  text-align: center;
+  background-color: #e8f4fd;
+  color: #007bff;
+  padding: 0.6rem 1rem;
+  border-radius: 8px;
+  font-weight: 500;
+  margin-bottom: 1.5rem;
+}
+
+/* ANIMATION */
 @keyframes fadeIn {
-  from { opacity: 0; transform: scale(0.9); }
-  to { opacity: 1; transform: scale(1); }
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }

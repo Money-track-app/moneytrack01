@@ -1,120 +1,144 @@
-/* force the main-content wrapper that holds Reports to be white */
-.main-content {
-  background-color: #fff !important;
-}
-/* receipts.css */
+/* receipts.css - Professional Styling */
 
-/* Page wrapper */
+/* Import a clean, modern font */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
+
+:root {
+  --bg-page: #f4f6f8;
+  --card-bg: #ffffff;
+  --text-primary: #2e3a45;
+  --text-secondary: #657786;
+  --accent: #1abc9c;
+  --accent-hover: #17a589;
+  --border-radius: 12px;
+  --shadow-light: rgba(0, 0, 0, 0.05);
+}
+
+/* Page layout */
 .receipts-page {
-    padding: 2rem;
-    background-color: #fff ;
-    min-height: 100vh;
+  padding: 3rem 4rem;
+  background-color: var(--bg-page);
+  min-height: 100vh;
+  font-family: 'Inter', sans-serif;
+  color: var(--text-primary);
+}
+
+.receipts-page h1 {
+  font-size: 2.5rem;
+  margin-bottom: 2rem;
+  font-weight: 600;
+  letter-spacing: -0.5px;
+}
+
+/* Filter styling */
+.receipts-page label {
+  display: inline-flex;
+  align-items: center;
+  margin-bottom: 2rem;
+  font-size: 1rem;
+  color: var(--text-secondary);
+}
+
+.receipts-page select {
+  margin-left: 0.75rem;
+  padding: 0.5rem 1rem;
+  font-size: 1rem;
+  color: var(--text-primary);
+  background-color: var(--card-bg);
+  border: 1px solid #d0d7de;
+  border-radius: var(--border-radius);
+  transition: border-color 0.2s ease;
+}
+
+.receipts-page select:focus {
+  border-color: var(--accent);
+  outline: none;
+}
+
+/* Grid container for cards */
+.receipts-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 2rem;
+}
+
+/* Receipt card */
+.receipt-card {
+  background-color: var(--card-bg);
+  border-radius: var(--border-radius);
+  overflow: hidden;
+  box-shadow: 0 4px 12px var(--shadow-light);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.receipt-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 8px 20px var(--shadow-light);
+}
+
+/* Thumbnail image */
+.receipt-card img.receipt-thumb {
+  width: 100%;
+  height: 160px;
+  object-fit: cover;
+  display: block;
+}
+
+.receipt-thumb.placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 160px;
+  background-color: #e1e4e8;
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+}
+
+/* Card footer with category badge */
+.receipt-card p {
+  margin: 0;
+  padding: 1rem;
+  font-size: 0.95rem;
+  color: var(--text-primary);
+  border-top: 1px solid #e6ebf1;
+}
+
+/* Responsive adjustments */
+@media (max-width: 1200px) {
+  .receipts-page {
+    padding: 2rem 3rem;
   }
-  
-  /* Heading */
+  .receipts-page h1 {
+    font-size: 2.25rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .receipts-page {
+    padding: 1.5rem 2rem;
+  }
+  .receipts-grid {
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 1.5rem;
+  }
+  .receipt-card img.receipt-thumb,
+  .receipt-thumb.placeholder {
+    height: 140px;
+  }
+}
+
+@media (max-width: 480px) {
+  .receipts-page {
+    padding: 1rem;
+  }
   .receipts-page h1 {
     font-size: 2rem;
-    margin-bottom: 1.5rem;
-    color: #2c3e50;
-    font-weight: 600;
   }
-
-  
-  
-  /* Filter label & select */
-  .receipts-page label {
-    display: flex;
-    align-items: center;
-    margin-bottom: 1.5rem;
-    font-size: 1rem;
-    color: #34495e;
-  }
-  
-  .receipts-page label select {
-    margin-left: 0.5rem;
-    padding: 0.5rem 0.75rem;
-    border: 1px solid #ccd1d9;
-    border-radius: 4px;
-    background-color: #fff;
-    font-size: 1rem;
-    color: #2c3e50;
-    transition: border-color 0.2s ease;
-  }
-  
-  .receipts-page label select:focus {
-    border-color: #1abc9c;
-    outline: none;
-  }
-  
-  /* Grid container */
   .receipts-grid {
-    display: grid;
-    gap: 1.5rem;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    grid-template-columns: 1fr;
   }
-  
-  /* Card styles */
-  .receipt-card {
-    background-color: #00d0ff;
-    border-radius: 8px;
-    overflow: hidden;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-    cursor: pointer;
+  .receipt-card img.receipt-thumb,
+  .receipt-thumb.placeholder {
+    height: 180px;
   }
-  
-  .receipt-card a {
-    color: black;
-    text-decoration: none;   /* remove underline */
-  }
-  
-  .receipt-card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
-  }
-  
-  /* Thumbnail image */
-  .receipt-thumb {
-    width: 100%;
-    height: 140px;
-    object-fit: cover;
-    color: black; 
-  }
-  
-  /* Category label */
-  .receipt-card p {
-    margin: 0;
-    padding: 0.75rem 1rem;
-    font-size: 0.95rem;
-    color: #000000;
-    border-top: 1px solid #ecf0f1;
-  }
-  
-  /* Responsive tweaks */
-  @media (max-width: 1024px) {
-    .receipts-page {
-      padding: 1.5rem;
-    }
-    .receipts-page h1 {
-      font-size: 1.75rem;
-    }
-  }
-  
-  @media (max-width: 768px) {
-    .receipts-grid {
-      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-    }
-  }
-  
-  @media (max-width: 480px) {
-    .receipts-page {
-      padding: 1rem;
-    }
-    .receipt-thumb {
-      height: 120px;
-    }
-    .receipt-card {
-      box-shadow: none;
-    }
-  }
-  
+}

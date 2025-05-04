@@ -13,58 +13,39 @@ export default function Settings() {
   const [showConfirmLogout, setShowConfirmLogout] = useState(false);
   const fileInputRef = useRef(null);
 
-  // Fetch profile data
-  const loadProfile = async () => {
-    try {
-      const token = localStorage.getItem('token');
-      const res = await fetch(`${API_URL}/api/profile`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setProfile({
-          fullName: data.fullName || '',
-          businessName: data.businessName || '',
-          avatarUrl: data.avatarUrl || '',
-          email: data.email || '',
-        });
-      }
-    } catch (err) {
-      console.error('Failed to load profile', err);
-    }
-  };
-
   useEffect(() => {
     (async () => {
-      await loadProfile();
-      setLoading(false);
+      const token = localStorage.getItem('token');
+      try {
+        const res = await fetch(`${API_URL}/api/profile`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setProfile({
+            fullName: data.fullName || '',
+            businessName: data.businessName || '',
+            avatarUrl: data.avatarUrl || '',
+            email: data.email || '',
+          });
+        }
+      } catch (err) {
+        console.error('Failed to load profile', err);
+      } finally {
+        setLoading(false);
+      }
     })();
   }, []);
 
-  // Handle logout
-  const handleLogout = () => {
-    localStorage.removeItem('token');
-    navigate('/', { replace: true });
-  };
-
-  const handleLogoutClick = () => {
-    setShowConfirmLogout(true);
-  };
-
-  const handleCancelLogout = () => {
-    setShowConfirmLogout(false);
-  };
-
-  // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
+    const token = localStorage.getItem('token');
     const formData = new FormData();
     formData.append('fullName', profile.fullName);
     formData.append('businessName', profile.businessName);
     if (avatarFile) formData.append('avatar', avatarFile);
 
     try {
-      const token = localStorage.getItem('token');
       const res = await fetch(`${API_URL}/api/profile`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${token}` },
@@ -79,17 +60,21 @@ export default function Settings() {
           avatarUrl: updated.avatarUrl || '',
           email: updated.email || profile.email,
         });
-        setMessage('Profile updated successfully!');
+        setMessage('✅ Profile updated successfully!');
       } else {
-        setMessage('Error saving profile.');
+        setMessage('❌ Error saving profile.');
       }
     } catch (err) {
-      console.error('Error updating profile', err);
-      setMessage('Error saving profile.');
+      console.error('Update failed', err);
+      setMessage('❌ Error saving profile.');
     }
   };
 
-  // Handle avatar deletion
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    navigate('/', { replace: true });
+  };
+
   const handleDeleteAvatar = async () => {
     try {
       const token = localStorage.getItem('token');
@@ -102,11 +87,13 @@ export default function Settings() {
         body: formData,
       });
       if (res.ok) {
-        setMessage('Avatar removed');
-        await loadProfile();
+        setMessage('🗑️ Avatar removed');
+        const updated = await res.json();
+        setProfile(prev => ({ ...prev, avatarUrl: updated.avatarUrl || '' }));
+        setAvatarFile(null);
       }
     } catch (err) {
-      console.error('Error deleting avatar', err);
+      console.error('Delete avatar failed', err);
     }
   };
 
@@ -115,6 +102,7 @@ export default function Settings() {
   return (
     <div className="settings-container">
       <h1>Profile Settings</h1>
+
       {message && <div className="settings-notice">{message}</div>}
 
       <div className="avatar-section">
@@ -126,10 +114,11 @@ export default function Settings() {
           ) : (
             <div className="avatar-placeholder">📷</div>
           )}
-          {!profile.avatarUrl && <div className="avatar-overlay">📷</div>}
+          {!profile.avatarUrl && <div className="avatar-overlay">Upload</div>}
         </div>
+
         {(profile.avatarUrl || avatarFile) && (
-          <button type="button" className="avatar-delete" onClick={handleDeleteAvatar}>✖</button>
+          <button type="button" className="avatar-delete" onClick={handleDeleteAvatar}>×</button>
         )}
         <input
           type="file"
@@ -140,15 +129,12 @@ export default function Settings() {
         />
       </div>
 
-      <form onSubmit={handleSubmit} className="settings-form">
+      <form className="settings-form" onSubmit={handleSubmit}>
         <label>
           Email
-          <input
-            type="email"
-            value={profile.email}
-            readOnly
-          />
+          <input type="email" value={profile.email} readOnly />
         </label>
+
         <label>
           Your Name
           <input
@@ -158,6 +144,7 @@ export default function Settings() {
             required
           />
         </label>
+
         <label>
           Business Name
           <input
@@ -167,18 +154,18 @@ export default function Settings() {
             required
           />
         </label>
-        <button type="submit" className="btn-save">Update</button>
-        <button type="button" className="btn-logout" onClick={handleLogoutClick}>Logout</button>
+
+        <button type="submit" className="btn-save">Save Changes</button>
+        <button type="button" className="btn-logout" onClick={() => setShowConfirmLogout(true)}>Logout</button>
       </form>
 
-      {/* --- Logout Confirmation Popup --- */}
       {showConfirmLogout && (
         <div className="confirm-popup">
           <div className="confirm-box">
             <p>Are you sure you want to logout?</p>
             <div className="confirm-buttons">
-              <button className="confirm-yes" onClick={handleLogout}>✅ Yes</button>
-              <button className="confirm-no" onClick={handleCancelLogout}>❌ No</button>
+              <button className="confirm-yes" onClick={handleLogout}>Yes</button>
+              <button className="confirm-no" onClick={() => setShowConfirmLogout(false)}>No</button>
             </div>
           </div>
         </div>

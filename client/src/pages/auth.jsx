@@ -9,7 +9,7 @@ const AuthPage = () => {
   return (
     <div className="auth-page">
       <div className="auth-container">
-        <h1>MoneyTrack</h1>
+
         {isRegistering ? <RegisterForm /> : <LoginForm />}
         <button onClick={() => setIsRegistering(!isRegistering)}>
           {isRegistering
@@ -18,7 +18,7 @@ const AuthPage = () => {
         </button>
       </div>
     </div>
-  );
+  )
 };
 
 export default AuthPage;

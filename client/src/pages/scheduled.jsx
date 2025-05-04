@@ -1,9 +1,8 @@
 import './scheduled.css';
-
-// Base API URL (backend)
-const API_URL = 'http://localhost:5000';
-
 import { useState, useEffect, useCallback } from 'react';
+import { FiEdit2, FiTrash2 } from 'react-icons/fi';
+
+const API_URL = 'http://localhost:5000';
 
 export default function Scheduled() {
   const [rules, setRules] = useState([]);
@@ -20,10 +19,8 @@ export default function Scheduled() {
   const [success, setSuccess] = useState(null);
   const [editingRuleId, setEditingRuleId] = useState(null);
 
-  // JWT token from localStorage
   const token = localStorage.getItem('token');
 
-  // Fetch scheduled rules
   const fetchRules = useCallback(async () => {
     try {
       const res = await fetch(`${API_URL}/api/scheduled`, {
@@ -32,9 +29,7 @@ export default function Scheduled() {
           Authorization: `Bearer ${token}`,
         },
       });
-      console.log('GET /api/scheduled →', res.status);
       const data = await res.json();
-      console.log('GET /api/scheduled payload:', data);
       if (!res.ok) throw new Error(data.error || `Error ${res.status}`);
       setRules(data);
     } catch (err) {
@@ -47,7 +42,6 @@ export default function Scheduled() {
     fetchRules();
   }, [fetchRules]);
 
-  // Populate form for editing
   function startEditing(rule) {
     setEditingRuleId(rule._id);
     setForm({
@@ -63,7 +57,6 @@ export default function Scheduled() {
     setSuccess(null);
   }
 
-  // Delete a rule
   async function deleteRule(id) {
     if (!window.confirm('Delete this schedule?')) return;
     try {
@@ -79,7 +72,6 @@ export default function Scheduled() {
     }
   }
 
-  // Handle form submit for create & update
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError(null);
@@ -105,13 +97,36 @@ export default function Scheduled() {
       );
       setTimeout(() => setSuccess(null), 3000);
       setEditingRuleId(null);
-      setForm({ title: '', type: 'income', amount: '', category: '', frequency: 'monthly', dayOfMonth: 1, month: 1 });
+      setForm({
+        title: '',
+        type: 'income',
+        amount: '',
+        category: '',
+        frequency: 'monthly',
+        dayOfMonth: 1,
+        month: 1,
+      });
       fetchRules();
     } catch (err) {
       console.error(err);
       setError(err.message);
     }
   };
+
+  const months = [
+    { value: 1, name: 'January' },
+    { value: 2, name: 'February' },
+    { value: 3, name: 'March' },
+    { value: 4, name: 'April' },
+    { value: 5, name: 'May' },
+    { value: 6, name: 'June' },
+    { value: 7, name: 'July' },
+    { value: 8, name: 'August' },
+    { value: 9, name: 'September' },
+    { value: 10, name: 'October' },
+    { value: 11, name: 'November' },
+    { value: 12, name: 'December' },
+  ];
 
   return (
     <div className="scheduled-container">
@@ -164,7 +179,7 @@ export default function Scheduled() {
           <input
             id="category"
             type="text"
-            placeholder="e.g. Salary"
+            placeholder="e.g. Food"
             value={form.category}
             onChange={(e) => setForm({ ...form, category: e.target.value })}
           />
@@ -198,27 +213,39 @@ export default function Scheduled() {
         {form.frequency === 'yearly' && (
           <div className="form-group">
             <label htmlFor="month">Month</label>
-            <input
+            <select
               id="month"
-              type="number"
-              min="1"
-              max="12"
               value={form.month}
               onChange={(e) => setForm({ ...form, month: +e.target.value })}
               required
-            />
+            >
+              {months.map((m) => (
+                <option key={m.value} value={m.value}>
+                  {m.name}
+                </option>
+              ))}
+            </select>
           </div>
         )}
 
         <button type="submit" className="btn-primary full-width">
           {editingRuleId ? 'Update Schedule' : 'Save Schedule'}
         </button>
+
         {editingRuleId && (
           <button
             type="button"
             onClick={() => {
               setEditingRuleId(null);
-              setForm({ title: '', type: 'income', amount: '', category: '', frequency: 'monthly', dayOfMonth: 1, month: 1 });
+              setForm({
+                title: '',
+                type: 'income',
+                amount: '',
+                category: '',
+                frequency: 'monthly',
+                dayOfMonth: 1,
+                month: 1,
+              });
             }}
             className="btn-secondary full-width"
           >
@@ -227,7 +254,8 @@ export default function Scheduled() {
         )}
       </form>
 
-      <h2>Your Scheduled Transactions</h2>
+      <h2 style={{ textAlign: 'left', marginTop: '2rem' }}>Your Scheduled Transactions</h2>
+
       {rules.length === 0 ? (
         <p>No schedules yet.</p>
       ) : (
@@ -246,19 +274,25 @@ export default function Scheduled() {
           <tbody>
             {rules.map((rule) => (
               <tr key={rule._id}>
-                <td>{rule.title}</td>
-                <td>{rule.type}</td>
-                <td>{rule.amount}</td>
-                <td>{rule.category}</td>
-                <td>
+                <td data-label="Title">{rule.title}</td>
+                <td data-label="Type">{rule.type}</td>
+                <td data-label="Amount">{rule.amount}</td>
+                <td data-label="Category">{rule.category}</td>
+                <td data-label="Frequency">
                   {rule.frequency === 'monthly'
                     ? `Monthly (day ${rule.dayOfMonth})`
-                    : `Yearly (${rule.month}/${rule.dayOfMonth})`}
+                    : `Yearly (${months.find((m) => m.value === rule.month)?.name || rule.month}/${rule.dayOfMonth})`}
                 </td>
-                <td>{new Date(rule.nextRun).toLocaleDateString()}</td>
-                <td>
-                  <button onClick={() => startEditing(rule)}>Edit</button>
-                  <button onClick={() => deleteRule(rule._id)}>Delete</button>
+                <td data-label="Next Run">
+                  {new Date(rule.nextRun).toLocaleDateString()}
+                </td>
+                <td data-label="Actions">
+                  <button onClick={() => startEditing(rule)} title="Edit">
+                    <FiEdit2 /> Edit
+                  </button>
+                  <button onClick={() => deleteRule(rule._id)} title="Delete">
+                    <FiTrash2 /> Delete
+                  </button>
                 </td>
               </tr>
             ))}

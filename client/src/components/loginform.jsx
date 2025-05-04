@@ -5,8 +5,13 @@ import './authform.css';
 const LoginForm = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [message, setMessage] = useState('');
+  const [toast, setToast] = useState({ type: '', message: '' });
   const navigate = useNavigate();
+
+  const showToast = (type, message) => {
+    setToast({ type, message });
+    setTimeout(() => setToast({ type: '', message: '' }), 3000);
+  };
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -27,13 +32,13 @@ const LoginForm = () => {
         localStorage.setItem('token', data.token);
         setEmail('');
         setPassword('');
-        setMessage('');
-        navigate('/dashboard');
+        showToast('success', 'Login successful!');
+        setTimeout(() => navigate('/dashboard'), 1500);
       } else {
-        setMessage(data.message || 'Login failed');
+        showToast('error', data.message || 'Login failed');
       }
     } catch {
-      setMessage('An error occurred. Please try again.');
+      showToast('error', 'An error occurred. Please try again.');
     }
   };
 
@@ -42,33 +47,50 @@ const LoginForm = () => {
   };
 
   return (
-    <form className="auth-form" onSubmit={handleLogin}>
-      <h2>Login</h2>
+    <>
+      <form className="auth-form" onSubmit={handleLogin}>
+        <img src="/logo.png" alt="MoneyTrack Logo" className="auth-logo-large" />
 
-      <input
-        type="email"
-        placeholder="Email"
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-        required
-      />
+        <p className="form-subtitle">Login to continue managing your finances</p>
 
-      <input
-        type="password"
-        placeholder="Password"
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-        required
-      />
+        <div className="input-wrapper">
+          <span className="input-icon">📧</span>
+          <input
+            type="email"
+            placeholder="Enter your email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+          />
+        </div>
 
-      <button type="submit">Login</button>
+        <div className="input-wrapper">
+          <span className="input-icon">🔒</span>
+          <input
+            type="password"
+            placeholder="Enter your password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+          />
+        </div>
 
-      <button type="button" onClick={handleGoogleLogin}>
-        Continue with Google
-      </button>
+        <button type="submit" className="primary-btn">Login</button>
 
-      {message && <p className="auth-message">{message}</p>}
-    </form>
+        <div className="divider">or</div>
+
+        <button type="button" className="google-btn" onClick={handleGoogleLogin}>
+          <img src="/google-icon.png" alt="Google" className="google-icon" />
+          Continue with Google
+        </button>
+      </form>
+
+      {toast.message && (
+        <div className={`custom-toast ${toast.type}`}>
+          {toast.message}
+        </div>
+      )}
+    </>
   );
 };
 

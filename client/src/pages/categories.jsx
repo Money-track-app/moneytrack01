@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useContext, useCallback } from 'react';
 import './categories.css';
 import { CategoryContext } from '../context/categorycontext';
-import { FaSearch, FaCog } from 'react-icons/fa';
+import { FaSearch, FaCog, FaFileCsv, FaFilePdf } from 'react-icons/fa';
 import { saveAs } from 'file-saver';
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
@@ -16,6 +16,7 @@ export default function Categories() {
   const [searchTerm, setSearchTerm] = useState('');
   const [openMenu, setOpenMenu] = useState(null);
   const [selectedCats, setSelectedCats] = useState([]);
+  const [selectMode, setSelectMode] = useState(false);
 
   const token = localStorage.getItem('token');
 
@@ -40,7 +41,7 @@ export default function Categories() {
     loadTransactions();
   }, [fetchCategories, loadTransactions]);
 
-  // Export CSV
+  // Export single category CSV
   const exportCategoryCSV = (cat) => {
     const header = ['Date', 'Description', 'Amount'];
     const rows = cat.transactions.map(tx => [
@@ -52,7 +53,26 @@ export default function Categories() {
     saveAs(new Blob([csv], { type: 'text/csv;charset=utf-8;' }), `${cat.name}_transactions.csv`);
   };
 
-  // Export PDF
+  // Export all categories CSV
+  const exportAllCSV = () => {
+    const header = ['Category', 'Date', 'Description', 'Amount'];
+    const rows = [];
+    categories.forEach(cat => {
+      const catTransactions = transactions.filter(tx => tx.category === cat._id);
+      catTransactions.forEach(tx => {
+        rows.push([
+          cat.name,
+          new Date(tx.date).toLocaleDateString(),
+          tx.description,
+          tx.amount.toFixed(2)
+        ]);
+      });
+    });
+    const csv = [header, ...rows].map(r => r.join(',')).join('\n');
+    saveAs(new Blob([csv], { type: 'text/csv;charset=utf-8;' }), `all_categories_transactions.csv`);
+  };
+
+  // Export single category PDF
   const exportCategoryPDF = (cat) => {
     const doc = new jsPDF();
     autoTable(doc, {
@@ -66,6 +86,30 @@ export default function Categories() {
     });
     doc.text(cat.name, 14, 15);
     doc.save(`${cat.name}_transactions.pdf`);
+  };
+
+  // Export all categories PDF
+  const exportAllPDF = () => {
+    const doc = new jsPDF();
+    const tableRows = [];
+    categories.forEach(cat => {
+      const catTransactions = transactions.filter(tx => tx.category === cat._id);
+      catTransactions.forEach(tx => {
+        tableRows.push([
+          cat.name,
+          new Date(tx.date).toLocaleDateString(),
+          tx.description,
+          tx.amount.toFixed(2)
+        ]);
+      });
+    });
+    autoTable(doc, {
+      head: [['Category', 'Date', 'Description', 'Amount']],
+      body: tableRows,
+      startY: 20
+    });
+    doc.text('All Categories Transactions', 14, 15);
+    doc.save('all_categories_transactions.pdf');
   };
 
   // Delete single category
@@ -97,9 +141,12 @@ export default function Categories() {
     );
   };
 
-  // Delete selected categories
+  // Toggle delete selection or exit
   const handleDeleteSelected = async () => {
-    if (!selectedCats.length) return;
+    if (!selectedCats.length) {
+      setSelectMode(false);
+      return;
+    }
     if (!window.confirm(`Delete ${selectedCats.length} selected categories and their transactions?`)) return;
     await Promise.all(
       selectedCats.map(id =>
@@ -110,6 +157,7 @@ export default function Categories() {
       )
     );
     setSelectedCats([]);
+    setSelectMode(false);
     fetchCategories();
     loadTransactions();
   };
@@ -139,24 +187,43 @@ export default function Categories() {
             onChange={e => setSearchTerm(e.target.value)}
           />
         </div>
-        <button
-          className="btn delete-all"
-          onClick={handleDeleteSelected}
-          disabled={!selectedCats.length}
-        >
-          Delete Selected ({selectedCats.length})
-        </button>
+        {!selectMode && (
+          <> 
+            <button className="btn export small" onClick={exportAllCSV}>
+              <FaFileCsv /> Export All CSV
+            </button>
+            <button className="btn export small" onClick={exportAllPDF}>
+              <FaFilePdf /> Export All PDF
+            </button>
+          </>
+        )}
+        {selectMode ? (
+          <button
+            className="btn delete-all small"
+            onClick={handleDeleteSelected}
+            disabled={false}
+          >
+            Delete Selected ({selectedCats.length})
+          </button>
+        ) : (
+          <button className="btn delete-all" onClick={() => setSelectMode(true)}>
+            Delete All
+          </button>
+        )}
       </div>
 
       {grouped.map(cat => (
         <section key={cat._id} className="category-section">
           <div className="section-header">
             <label>
-              <input
-                type="checkbox"
-                checked={selectedCats.includes(cat._id)}
-                onChange={() => handleSelectCat(cat._id)}
-              />{' '}{cat.name}
+              {selectMode && (
+                <input
+                  type="checkbox"
+                  checked={selectedCats.includes(cat._id)}
+                  onChange={() => handleSelectCat(cat._id)}
+                />
+              )}{' '}
+              {cat.name}
             </label>
             <div className="actions">
               <FaCog
