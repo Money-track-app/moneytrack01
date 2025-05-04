@@ -17,6 +17,8 @@ import settings from './pages/settings';
 import receipts from './pages/receipts';
 import upgrade from './pages/upgrade';   // ✅ Premium Upgrade page
 import support from './pages/support';   // ✅ Help & Support page
+import Privacy from './pages/privacy'; // ✅ Privacy Policy page
+import Terms from './pages/terms';     // ✅ Terms of Service page
 
 
 // Layout Components
@@ -87,6 +89,8 @@ function App() {
             <Route path="/receipts" element={<DashboardLayout><Receipts /></DashboardLayout>} />
             <Route path="/upgrade" element={<DashboardLayout><Upgrade /></DashboardLayout>} /> {/* ✅ Upgrade Route */}
             <Route path="/support" element={<DashboardLayout><Support /></DashboardLayout>} /> {/* ✅ Help Route */}
+            <Route path="/privacy" element={<DashboardLayout><Privacy /></DashboardLayout>} /> {/* ✅ Help Route */}
+            <Route path="/terms" element={<DashboardLayout><Terms/></DashboardLayout>} /> {/* ✅ Help Route */}
           </Routes>
         </Router>
       </SearchProvider>

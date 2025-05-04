@@ -84,7 +84,7 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 const reportRoutes      = require('./routes/reportroutes');
 const transactionRoutes = require('./routes/transactionroutes');
 const receiptsRoutes    = require('./routes/receiptsroutes');
-const profileRoutes     = require('./routes/profileroutes');
+const profileRoutes = require('./routes/profileroutes')
 const categoryRoutes = require('./routes/categoriesroutes');
 
 
@@ -101,7 +101,7 @@ app.use('/api/reports', reportRoutes);
 app.use('/api/transactions', transactionRoutes);
 app.use('/api/receipts', receiptsRoutes);
 app.use('/api/scheduled', authenticate, scheduledRoutes);
-app.use('/api/profile',     authenticate, profileRoutes);
+app.use('/api/profile', authenticate, profileRoutes);
 app.use('/api/categories', categoryRoutes);
 
 

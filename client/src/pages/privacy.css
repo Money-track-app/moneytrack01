@@ -1,110 +1,78 @@
-/* client/src/pages/privacy.css */
 .privacy-container {
-    max-width: 850px;
-    margin: 3rem auto;
-    padding: 2rem;
-    background: #ffffff;
-    border-radius: 16px;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-    font-family: 'Inter', sans-serif;
-    line-height: 1.7;
-    color: #2c3e50;
+  max-width: 960px;
+  margin: 2rem auto;
+  padding: 2.5rem;
+  background-color: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.06);
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  color: #333;
+  line-height: 1.8;
+  transition: all 0.3s ease-in-out;
+}
+
+.privacy-container h1 {
+  font-size: 2.5rem;
+  color: #1abc9c;
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+
+.privacy-container h2 {
+  font-size: 1.5rem;
+  margin-top: 2rem;
+  color: #2c3e50;
+}
+
+.privacy-container p {
+  margin-bottom: 1.2rem;
+  font-size: 1.05rem;
+}
+
+.privacy-container a {
+  color: #1abc9c;
+  text-decoration: none;
+  transition: color 0.2s ease-in-out;
+}
+
+.privacy-container a:hover {
+  text-decoration: underline;
+  color: #16a085;
+}
+
+/* ✅ Mobile responsiveness */
+@media (max-width: 768px) {
+  .privacy-container {
+    padding: 1.5rem;
   }
-  
+
   .privacy-container h1 {
-    font-size: 2.5rem;
-    font-weight: 700;
-    margin-bottom: 0.5rem;
-    color: #1f7aec;
-    text-align: center;
+    font-size: 2rem;
   }
-  
-  .privacy-container .effective-date {
-    text-align: center;
-    font-size: 0.95rem;
-    color: #6c757d;
-    margin-bottom: 2rem;
-  }
-  
-  .privacy-container section {
-    margin-bottom: 2rem;
-  }
-  
+
   .privacy-container h2 {
-    font-size: 1.5rem;
-    margin-bottom: 0.8rem;
-    color: #1f7aec;
+    font-size: 1.3rem;
   }
-  
-  .privacy-container p,
-  .privacy-container li {
+
+  .privacy-container p {
     font-size: 1rem;
-    color: #34495e;
   }
-  
-  .privacy-container ul {
-    padding-left: 1.25rem;
-    list-style-type: disc;
+}
+
+@media (max-width: 480px) {
+  .privacy-container {
+    padding: 1rem;
   }
-  
-  .privacy-container a {
-    color: #1f7aec;
-    text-decoration: none;
+
+  .privacy-container h1 {
+    font-size: 1.7rem;
   }
-  
-  .privacy-container a:hover {
-    text-decoration: underline;
+
+  .privacy-container h2 {
+    font-size: 1.1rem;
   }
-  
-  .privacy-container .note {
-    margin-top: 2rem;
-    font-style: italic;
-    color: #777;
-    text-align: center;
+
+  .privacy-container p {
+    font-size: 0.95rem;
   }
-  
-  /* -------------------- RESPONSIVE STYLING -------------------- */
-  @media (max-width: 768px) {
-    .privacy-container {
-      padding: 1.5rem;
-      margin: 2rem 1rem;
-    }
-  
-    .privacy-container h1 {
-      font-size: 2rem;
-    }
-  
-    .privacy-container h2 {
-      font-size: 1.25rem;
-    }
-  
-    .privacy-container p,
-    .privacy-container li {
-      font-size: 0.95rem;
-    }
-  }
-  
-  @media (max-width: 480px) {
-    .privacy-container {
-      padding: 1.25rem;
-      margin: 1.5rem 1rem;
-    }
-  
-    .privacy-container h1 {
-      font-size: 1.75rem;
-    }
-  
-    .privacy-container h2 {
-      font-size: 1.15rem;
-    }
-  
-    .privacy-container p,
-    .privacy-container li {
-      font-size: 0.9rem;
-    }
-  
-    .privacy-container ul {
-      padding-left: 1rem;
-    }
-  }
-  
+}

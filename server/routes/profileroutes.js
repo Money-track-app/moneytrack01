@@ -11,23 +11,21 @@ const router = express.Router();
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     const uploadPath = path.join(__dirname, '../uploads/avatars');
-    fs.mkdirSync(uploadPath, { recursive: true }); // Ensure directory exists
+    fs.mkdirSync(uploadPath, { recursive: true });
     cb(null, uploadPath);
   },
   filename: (req, file, cb) => {
-    const ext = path.extname(file.originalname).toLowerCase(); // .png, .jpg
+    const ext = path.extname(file.originalname).toLowerCase();
     cb(null, `${req.user.id}${ext}`);
   }
 });
 const upload = multer({ storage });
-
-// Middleware to handle single file upload
 const uploadAvatar = upload.single('avatar');
 
 // GET /api/profile
 router.get('/', authenticate, async (req, res) => {
   try {
-    const user = await User.findById(req.user.id).select('fullName businessName avatarUrl email');
+    const user = await User.findById(req.user.id).select('fullName businessName avatarUrl email currency');
     if (!user) return res.status(404).json({ error: 'User not found' });
     return res.json(user);
   } catch (err) {
@@ -36,7 +34,7 @@ router.get('/', authenticate, async (req, res) => {
   }
 });
 
-// POST /api/profile
+// POST /api/profile (update profile + avatar)
 router.post('/', authenticate, (req, res, next) => {
   uploadAvatar(req, res, (err) => {
     if (err) {
@@ -46,9 +44,6 @@ router.post('/', authenticate, (req, res, next) => {
     next();
   });
 }, async (req, res) => {
-  console.log('📦 req.body:', req.body);
-  console.log('🖼️ req.file:', req.file);
-
   try {
     const user = await User.findById(req.user.id);
     if (!user) return res.status(404).json({ error: 'User not found' });
@@ -63,28 +58,54 @@ router.post('/', authenticate, (req, res, next) => {
         if (fs.existsSync(oldPath)) fs.unlinkSync(oldPath);
       }
       user.avatarUrl = '';
-      console.log('🗑️ Avatar cleared');
     }
 
     // Handle new avatar upload
     if (req.file) {
       const ext = path.extname(req.file.originalname).toLowerCase();
       user.avatarUrl = `/uploads/avatars/${req.user.id}${ext}`;
-      console.log('✅ Avatar set to:', user.avatarUrl);
     }
 
     await user.save();
-    console.log('✅ User saved:', user);
-
     return res.json({
       fullName: user.fullName,
       businessName: user.businessName,
       avatarUrl: user.avatarUrl,
-      email: user.email
+      email: user.email,
+      currency: user.currency
     });
   } catch (err) {
     console.error('❌ Profile update error:', err);
     return res.status(500).json({ error: 'Could not update profile' });
+  }
+});
+
+// ✅ NEW: PUT /api/profile/currency (update user currency)
+router.put('/currency', authenticate, async (req, res) => {
+  try {
+    const { currency } = req.body;
+    if (!currency) return res.status(400).json({ error: 'Currency is required' });
+
+    const user = await User.findByIdAndUpdate(
+      req.user.id,
+      { currency },
+      { new: true }
+    );
+    return res.json({ message: 'Currency updated', currency: user.currency });
+  } catch (err) {
+    console.error('❌ Currency update error:', err);
+    return res.status(500).json({ error: 'Could not update currency' });
+  }
+});
+
+// ✅ NEW: GET /api/profile/currency (get current currency)
+router.get('/currency', authenticate, async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id).select('currency');
+    return res.json({ currency: user.currency });
+  } catch (err) {
+    console.error('❌ Currency fetch error:', err);
+    return res.status(500).json({ error: 'Could not get currency' });
   }
 });
 
