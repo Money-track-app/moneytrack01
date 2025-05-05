@@ -1,4 +1,4 @@
-/* Dashboard.css - Professional, modern design */
+/* Dashboard.css - Professional, modern design with animation */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap');
 
 :root {
@@ -7,7 +7,7 @@
   --color-card-bg: #ffffff;
   --color-primary: #1f7aec;
   --color-secondary: #6c757d;
-  --color-accent: #4bc0c0;
+  --color-accent: #1abc9c;
   --color-text: #343a40;
   --color-text-light: #6c757d;
   --border-radius: 12px;
@@ -37,17 +37,24 @@ body {
 }
 
 .card {
-  background: var(--color-card-bg);
+  background: rgba(255, 255, 255, 0.25);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   padding: var(--spacing);
   border-radius: var(--border-radius);
-  box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
   text-align: center;
-  transition: transform var(--transition), box-shadow var(--transition);
+  transition: transform var(--transition), box-shadow var(--transition), background 0.4s ease, border 0.3s ease;
+  animation: fadeUp 0.6s ease forwards;
+  opacity: 0;
+  border: 2px solid transparent;
 }
 
 .card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+  transform: translateY(-6px);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
+  background: rgba(255, 255, 255, 0.35);
+  border: 2px solid var(--color-accent);
 }
 
 .card h3 {
@@ -58,7 +65,7 @@ body {
 }
 
 .card p {
-  font-size: 1.5rem;
+  font-size: 1.8rem;
   font-weight: 700;
   margin: 0;
   color: var(--color-text);
@@ -76,7 +83,7 @@ body {
   background: var(--color-card-bg);
   padding: var(--spacing);
   border-radius: var(--border-radius);
-  box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
 }
 
 .chart-item h4 {
@@ -91,7 +98,7 @@ body {
   max-height: 320px !important;
 }
 
-/* Details */
+/* Details Section */
 .details-container {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -102,7 +109,7 @@ body {
   background: var(--color-card-bg);
   padding: var(--spacing);
   border-radius: var(--border-radius);
-  box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
   overflow-x: auto;
 }
 
@@ -142,7 +149,6 @@ body {
   color: #dc3545;
 }
 
-/* Scheduled List */
 .list-section ul {
   list-style: none;
   padding: 0;
@@ -160,7 +166,6 @@ body {
   border-bottom: none;
 }
 
-/* Responsive */
 @media (max-width: 992px) {
   .charts-container,
   .details-container {
@@ -184,4 +189,15 @@ body {
 .dashboard-container th,
 .dashboard-container td {
   color: #212529;
+}
+
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }

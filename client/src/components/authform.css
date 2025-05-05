@@ -21,10 +21,15 @@
   margin-bottom: 12px;
 }
 
-/* Input wrapper for icon inside field */
+/* ✅ Input wrapper with hover animation */
 .input-wrapper {
   position: relative;
   width: 100%;
+  transition: transform 0.3s ease;
+}
+
+.input-wrapper:hover {
+  transform: translateY(-2px);
 }
 
 .input-wrapper input {
@@ -33,13 +38,20 @@
   font-size: 15px;
   border: 1px solid #ccc;
   border-radius: 8px;
-  transition: border 0.3s;
+  transition: border 0.3s, box-shadow 0.3s, padding-left 0.3s;
   box-sizing: border-box;
+  background-color: white;
 }
 
 .input-wrapper input:focus {
   border-color: #007bff;
   outline: none;
+}
+
+.input-wrapper:hover input {
+  border-color: #1abc9c;
+  box-shadow: 0 0 8px rgba(26, 188, 156, 0.4);
+  padding-left: 42px;
 }
 
 .input-icon {
@@ -50,9 +62,14 @@
   font-size: 16px;
   color: #888;
   pointer-events: none;
+  transition: transform 0.3s ease;
 }
 
-/* Main button */
+.input-wrapper:hover .input-icon {
+  transform: translateY(-50%) translateX(2px);
+}
+
+/* ✅ Main button with #1abc9c hover effect */
 .primary-btn {
   background-color: #1a1a2e;
   color: white;
@@ -61,12 +78,14 @@
   border-radius: 8px;
   font-size: 16px;
   cursor: pointer;
-  transition: background 0.3s;
+  transition: all 0.3s ease;
   font-weight: 500;
 }
 
 .primary-btn:hover {
-  background-color: #0f3460;
+  background-color: #1abc9c;
+  box-shadow: 0 0 10px rgba(26, 188, 156, 0.6);
+  transform: scale(1.02);
 }
 
 /* Divider line */
@@ -89,7 +108,7 @@
   margin: 0 10px;
 }
 
-/* Google button */
+/* ✅ Google button with #1abc9c hover effect */
 .google-btn {
   display: flex;
   align-items: center;
@@ -103,7 +122,7 @@
   font-weight: 500;
   border: none;
   cursor: pointer;
-  transition: background-color 0.3s;
+  transition: all 0.3s ease;
 }
 
 .google-btn img.google-icon {
@@ -115,7 +134,9 @@
 }
 
 .google-btn:hover {
-  background-color: #0f3460;
+  background-color: #1abc9c;
+  box-shadow: 0 0 10px rgba(26, 188, 156, 0.6);
+  transform: scale(1.02);
 }
 
 /* Error/success message */
@@ -179,16 +200,16 @@
   color: #28a745;
 }
 
+/* Logo Styling */
 .auth-logo-large {
-  width: 100px;               /* Base size stays within form width */
+  width: 100px;
   height: auto;
   margin: 0 auto 16px;
   display: block;
-  transform: scale(1.5);      /* Makes logo appear larger */
+  transform: scale(1.5);
   transform-origin: center;
   animation: fadeInLogo 0.4s ease-in-out;
 }
-
 
 @keyframes fadeInLogo {
   from {

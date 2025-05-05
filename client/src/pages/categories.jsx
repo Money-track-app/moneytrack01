@@ -21,17 +21,6 @@ export default function Categories() {
 
   const token = localStorage.getItem('token');
 
-  const getCurrencySymbol = (code) => {
-    const symbols = {
-      USD: '$',
-      EUR: '€',
-      GBP: '£',
-      INR: '₹',
-      AED: 'د.إ',
-    };
-    return symbols[code] || code;
-  };
-
   const loadTransactions = useCallback(async () => {
     setLoading(true);
     try {
@@ -58,7 +47,7 @@ export default function Categories() {
     const rows = cat.transactions.map(tx => [
       new Date(tx.date).toLocaleDateString(),
       tx.description,
-      `${getCurrencySymbol(tx.currency)}${tx.amount.toFixed(2)}`
+      tx.amount.toFixed(2)
     ]);
     const csv = [header, ...rows].map(r => r.join(',')).join('\n');
     saveAs(new Blob([csv], { type: 'text/csv;charset=utf-8;' }), `${cat.name}_transactions.csv`);
@@ -74,7 +63,7 @@ export default function Categories() {
           cat.name,
           new Date(tx.date).toLocaleDateString(),
           tx.description,
-          `${getCurrencySymbol(tx.currency)}${tx.amount.toFixed(2)}`
+          tx.amount.toFixed(2)
         ]);
       });
     });
@@ -89,7 +78,7 @@ export default function Categories() {
       body: cat.transactions.map(tx => [
         new Date(tx.date).toLocaleDateString(),
         tx.description,
-        `${getCurrencySymbol(tx.currency)}${tx.amount.toFixed(2)}`
+        tx.amount.toFixed(2)
       ]),
       startY: 20
     });
@@ -107,7 +96,7 @@ export default function Categories() {
           cat.name,
           new Date(tx.date).toLocaleDateString(),
           tx.description,
-          `${getCurrencySymbol(tx.currency)}${tx.amount.toFixed(2)}`
+          tx.amount.toFixed(2)
         ]);
       });
     });
@@ -264,7 +253,7 @@ export default function Categories() {
                   <tr key={tx._id}>
                     <td data-label="Date">{new Date(tx.date).toLocaleDateString()}</td>
                     <td data-label="Description">{tx.description}</td>
-                    <td data-label="Amount">{getCurrencySymbol(tx.currency)}{tx.amount.toFixed(2)}</td>
+                    <td data-label="Amount">${tx.amount.toFixed(2)}</td>
                     <td>
                       <button
                         className="btn small delete"

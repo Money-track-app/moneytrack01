@@ -1,5 +1,7 @@
 import React, { useEffect, useState, useContext } from 'react';
 import './Dashboard.css';
+import AOS from 'aos';
+import 'aos/dist/aos.css';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -25,21 +27,46 @@ ChartJS.register(
 );
 
 const API_URL = 'http://localhost:5000';
-
 const brightColors = [
   '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40',
 ];
 
 const getCurrencySymbol = (code) => {
-  const symbols = {
-    USD: '$',
-    EUR: '€',
-    GBP: '£',
-    INR: '₹',
-    AED: 'د.إ',
-  };
+  const symbols = { USD: '$', EUR: '€', GBP: '£', INR: '₹', AED: 'د.إ' };
   return symbols[code] || code;
 };
+
+function SummaryCard({ title, value, prefix }) {
+  const [displayValue, setDisplayValue] = useState(0);
+
+  useEffect(() => {
+    const end = value;
+    const duration = 1000;
+    const stepTime = 16;
+    const totalSteps = Math.ceil(duration / stepTime);
+    let step = 0;
+
+    const counter = setInterval(() => {
+      step++;
+      const progress = step / totalSteps;
+      const eased = progress * (2 - progress);
+      setDisplayValue((end * eased).toFixed(2));
+      if (step >= totalSteps) {
+        setDisplayValue(end.toFixed(2));
+        clearInterval(counter);
+      }
+    }, stepTime);
+
+    return () => clearInterval(counter);
+  }, [value]);
+
+  return (
+    <div className="card">
+      <h3>{title}</h3>
+      <p>{prefix}{displayValue}</p>
+    </div>
+  );
+}
 
 export default function Dashboard() {
   const { categories } = useContext(CategoryContext);
@@ -54,8 +81,9 @@ export default function Dashboard() {
   const [scheduled, setScheduled] = useState([]);
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
+    AOS.init({ duration: 800, once: true });
 
+    const token = localStorage.getItem('token');
     async function fetchData() {
       try {
         const [sumRes, txRes, schedRes] = await Promise.all([
@@ -169,70 +197,68 @@ export default function Dashboard() {
 
   return (
     <div className="dashboard-container">
-      {/* Summary Cards */}
       <div className="summary-cards">
-        <div className="card"><h3>Total Balance</h3><p>${summary.totalBalance.toFixed(2)}</p></div>
-        <div className="card"><h3>Income This Month</h3><p>+ ${summary.incomeThisMonth.toFixed(2)}</p></div>
-        <div className="card"><h3>Expenses This Month</h3><p>- ${summary.expensesThisMonth.toFixed(2)}</p></div>
-        <div className="card"><h3>Net Profit/Loss</h3><p>${summary.netProfitLoss.toFixed(2)}</p></div>
+        <SummaryCard title="Total Balance" value={summary.totalBalance} prefix="$" />
+        <SummaryCard title="Income This Month" value={summary.incomeThisMonth} prefix="+ $" />
+        <SummaryCard title="Expenses This Month" value={summary.expensesThisMonth} prefix="- $" />
+        <SummaryCard title="Net Profit/Loss" value={summary.netProfitLoss} prefix="$" />
       </div>
 
-      {/* Charts */}
       <div className="charts-container">
-        <div className="chart-item">
+        <div className="chart-item" data-aos="fade-up">
           <h4>Income vs. Expenses (30d)</h4>
           <Line data={trendChartData} />
         </div>
-        <div className="chart-item">
+        <div className="chart-item" data-aos="fade-up" data-aos-delay="100">
           <h4>Expenses by Category</h4>
           <Pie data={categoryChartData} />
         </div>
       </div>
 
-      {/* Details */}
       <div className="details-container">
-        <div className="list-section">
-          <h4>Recent Transactions</h4>
-          <table>
-            <thead>
-              <tr>
-                <th>Date</th><th>Description</th><th>Category</th><th>Amount</th>
-              </tr>
-            </thead>
-            <tbody>
-              {recentTx.map((tx) => {
-                const d = new Date(tx.date);
-                return (
-                  <tr key={tx._id}>
-                    <td>{isNaN(d.getTime()) ? '—' : d.toLocaleDateString()}</td>
-                    <td>{tx.description}</td>
-                    <td>{getCategoryName(tx.category)}</td>
-                    <td className={tx.type === 'income' ? 'positive' : 'negative'}>
-                      {tx.type === 'income' ? '+' : '-'}
-                      {getCurrencySymbol(tx.currency)}{tx.amount.toFixed(2)}
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
+  <div className="list-section" data-aos="fade-up">
+    <h4>Recent Transactions</h4>
+    <table>
+      <thead>
+        <tr>
+          <th>Date</th><th>Description</th><th>Category</th><th>Amount</th>
+        </tr>
+      </thead>
+      <tbody>
+        {recentTx.map((tx) => {
+          const d = new Date(tx.date);
+          return (
+            <tr key={tx._id}>
+              <td>{isNaN(d.getTime()) ? '—' : d.toLocaleDateString()}</td>
+              <td>{tx.description}</td>
+              <td>{getCategoryName(tx.category)}</td>
+              <td className={tx.type === 'income' ? 'positive' : 'negative'}>
+                {tx.type === 'income' ? '+' : '-'}
+                {getCurrencySymbol(tx.currency)}{tx.amount.toFixed(2)}
+              </td>
+            </tr>
+          );
+        })}
+      </tbody>
+    </table>
+  </div>
 
-        <div className="list-section">
-          <h4>Upcoming Scheduled</h4>
-          <ul>
-            {upcoming.length > 0 ? (
-              upcoming.map((item) => (
-                <li key={item._id}>
-                  {item._parsedDate.toLocaleDateString()} – ${item.amount.toFixed(2)}
-                </li>
-              ))
-            ) : (
-              <li>No upcoming items</li>
-            )}
-          </ul>
-        </div>
-      </div>
+  <div className="list-section" data-aos="fade-up" data-aos-delay="100">
+    <h4>Upcoming Scheduled</h4>
+    <ul>
+      {upcoming.length > 0 ? (
+        upcoming.map((item) => (
+          <li key={item._id}>
+            {item._parsedDate.toLocaleDateString()} – ${item.amount.toFixed(2)}
+          </li>
+        ))
+      ) : (
+        <li>No upcoming items</li>
+      )}
+    </ul>
+  </div>
+</div>
+
     </div>
   );
 }
