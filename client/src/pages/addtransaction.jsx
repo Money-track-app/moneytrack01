@@ -20,6 +20,7 @@ const AddTransaction = () => {
   const [useNewCategory, setUseNewCategory] = useState(false);
   const [newCategory, setNewCategory] = useState({ name: '', type: 'expense' });
   const [receiptFile, setReceiptFile] = useState(null);
+  const [user, setUser] = useState(null); // 👈 user info
 
   const currencyOptions = [
     { code: 'USD', symbol: '$' },
@@ -32,6 +33,21 @@ const AddTransaction = () => {
   useEffect(() => {
     fetchCategories();
   }, [fetchCategories]);
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const { data } = await axios.get(`${API_URL}/api/profile`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        setUser(data);
+      } catch (err) {
+        console.error('Failed to fetch user info:', err);
+      }
+    };
+    fetchUser();
+  }, []);
 
   const handleChange = e =>
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -78,9 +94,6 @@ const AddTransaction = () => {
       toast.success('✅ Transaction added successfully!', {
         position: 'top-center',
         autoClose: 3000,
-        hideProgressBar: false,
-        pauseOnHover: true,
-        draggable: true,
         theme: 'colored',
       });
 
@@ -97,11 +110,19 @@ const AddTransaction = () => {
       setReceiptFile(null);
     } catch (err) {
       console.error('Error adding transaction:', err);
-      toast.error('❌ Failed to add transaction.', {
-        position: 'top-right',
-        autoClose: 3000,
-        theme: 'colored',
-      });
+      if (err.response && err.response.status === 403) {
+        toast.error(err.response.data.message || '❌ Limit reached. Upgrade to Premium.', {
+          position: 'top-center',
+          autoClose: 3000,
+          theme: 'colored',
+        });
+      } else {
+        toast.error('❌ Failed to add transaction.', {
+          position: 'top-right',
+          autoClose: 3000,
+          theme: 'colored',
+        });
+      }
     }
   };
 
@@ -200,13 +221,18 @@ const AddTransaction = () => {
             name="currency"
             value={form.currency}
             onChange={handleChange}
+            disabled={user && !user.isPremium && user.role !== 'admin'}
             required
           >
-            {currencyOptions.map(c => (
-              <option key={c.code} value={c.code}>
-                {c.symbol} - {c.code}
-              </option>
-            ))}
+            {user && !user.isPremium && user.role !== 'admin' ? (
+              <option value="USD">$ - USD</option>
+            ) : (
+              currencyOptions.map(c => (
+                <option key={c.code} value={c.code}>
+                  {c.symbol} - {c.code}
+                </option>
+              ))
+            )}
           </select>
         </label>
 

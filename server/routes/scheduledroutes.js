@@ -42,6 +42,13 @@ router.get('/', async (req, res) => {
 // POST create a new schedule
 router.post('/', async (req, res) => {
   try {
+    // 🔒 Free users can only create 2 scheduled rules
+    const existingCount = await Scheduled.countDocuments({ userId: req.user.id });
+
+    if (!req.user.isPremium && req.user.role !== 'admin' && existingCount >= 2) {
+      return res.status(403).json({ error: 'Free plan limit reached. Upgrade to Premium to create more scheduled rules.' });
+    }
+
     const {
       title,
       type,
@@ -50,7 +57,7 @@ router.post('/', async (req, res) => {
       frequency,
       dayOfMonth,
       month,
-      currency = 'USD' // ✅ Default if not sent
+      currency = 'USD'
     } = req.body;
 
     const nextRun = computeNextRun({ frequency, dayOfMonth, month });

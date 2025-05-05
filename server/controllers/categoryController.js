@@ -16,6 +16,14 @@ exports.createCategory = async (req, res) => {
   try {
     const { name, type } = req.body;
     if (!name || !type) return res.status(400).json({ message: 'Name and type are required' });
+
+    // 🔒 Free users can only create 5 categories
+    const existingCount = await Category.countDocuments({ userId: req.user.id });
+
+    if (!req.user.isPremium && req.user.role !== 'admin' && existingCount >= 5) {
+      return res.status(403).json({ message: 'Free plan limit reached. Upgrade to Premium to add more categories.' });
+    }
+
     const category = new Category({ userId: req.user.id, name, type });
     await category.save();
     res.status(201).json(category);

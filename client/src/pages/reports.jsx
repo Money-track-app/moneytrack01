@@ -22,17 +22,18 @@ export default function Reports() {
   const [start, setStart] = useState('');
   const [end, setEnd] = useState('');
 
+  const [toast, setToast] = useState({ show: false, message: '' });
+
   const doughnutRef = useRef(null);
   const barRef = useRef(null);
 
+  const showToast = (msg) => {
+    setToast({ show: true, message: msg });
+    setTimeout(() => setToast({ show: false, message: '' }), 3000);
+  };
+
   const getCurrencySymbol = (code) => {
-    const symbols = {
-      USD: '$',
-      EUR: '€',
-      GBP: '£',
-      INR: '₹',
-      AED: 'د.إ',
-    };
+    const symbols = { USD: '$', EUR: '€', GBP: '£', INR: '₹', AED: 'د.إ' };
     return symbols[code] || code;
   };
 
@@ -62,6 +63,25 @@ export default function Reports() {
   };
 
   useEffect(fetchReport, [start, end]);
+
+  const checkExportLimit = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch('http://localhost:5000/api/export/check', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+      });
+      const result = await res.json();
+      if (!result.allowed) showToast('❌ Export limit reached. Upgrade to Premium.');
+      return result.allowed;
+    } catch {
+      showToast('❌ Export limit reached. Upgrade to Premium.');
+      return false;
+    }
+  };
 
   if (loading) return <p>Loading reports…</p>;
   if (error) return <p className="reports-error">{error}</p>;
@@ -120,7 +140,6 @@ export default function Reports() {
   };
 
   const showTrend = Array.isArray(report.trend) && report.trend.length > 0;
-
   const chartOptions = { responsive: true, maintainAspectRatio: false };
 
   const handlePieClick = evt => {
@@ -139,7 +158,10 @@ export default function Reports() {
 
   const clearFilters = () => { setFilteredTxns(null); setStart(''); setEnd(''); };
 
-  const exportCSV = () => {
+  const exportCSV = async () => {
+    const allowed = await checkExportLimit();
+    if (!allowed) return;
+
     const header = ['Date', 'Description', 'Category', 'Type', 'Amount'];
     const rows = searchFilteredTxns.map(tx => [
       new Date(tx.date).toLocaleDateString(),
@@ -152,7 +174,10 @@ export default function Reports() {
     saveAs(new Blob([csv], { type: 'text/csv;charset=utf-8;' }), 'transactions.csv');
   };
 
-  const exportPDF = () => {
+  const exportPDF = async () => {
+    const allowed = await checkExportLimit();
+    if (!allowed) return;
+
     const doc = new jsPDF();
     const head = [['Date', 'Description', 'Category', 'Type', 'Amount']];
     const body = searchFilteredTxns.map(tx => [
@@ -238,6 +263,13 @@ export default function Reports() {
           </tbody>
         </table>
       </div>
+
+      {/* ✅ Toast Notification */}
+      {toast.show && (
+        <div className="toast-notification">
+          {toast.message}
+        </div>
+      )}
     </div>
   );
 }

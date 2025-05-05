@@ -251,3 +251,124 @@
   .scheduled-table td:nth-of-type(6):before { content: "Next Run"; }
   .scheduled-table td:nth-of-type(7):before { content: "Actions"; }
 }
+
+.toast-notification {
+  position: fixed;
+  bottom: 30px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: linear-gradient(135deg, #ff4e4e, #c0392b);
+  color: #fff;
+  padding: 1rem 1.5rem;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  z-index: 1000;
+  animation: slideFade 0.3s ease;
+}
+
+.toast-notification.success {
+  background: linear-gradient(135deg, #34d399, #059669);
+}
+
+@keyframes slideFade {
+  from {
+    transform: translateX(-50%) translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(-50%) translateY(0);
+    opacity: 1;
+  }
+}
+
+
+/* 🧊 Confirmation Modal Overlay */
+.confirm-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(30, 41, 59, 0.6); /* dark transparent */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+}
+
+/* 💬 Confirmation Box */
+.confirm-box {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 2rem;
+  width: 90%;
+  max-width: 420px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  text-align: center;
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+.confirm-box h3 {
+  font-size: 1.5rem;
+  color: #1f2937;
+  margin-bottom: 0.5rem;
+}
+
+.confirm-box p {
+  font-size: 1rem;
+  color: #4b5563;
+  margin-bottom: 1.5rem;
+}
+
+/* 🎯 Confirmation Actions */
+.confirm-actions {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+}
+
+.confirm-actions .btn {
+  padding: 0.6rem 1.4rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: transform 0.2s ease, background-color 0.2s ease;
+}
+
+/* 🚫 Cancel Button */
+.confirm-actions .btn.cancel {
+  background-color: #e5e7eb;
+  color: #1f2937;
+}
+
+.confirm-actions .btn.cancel:hover {
+  background-color: #d1d5db;
+  transform: scale(1.02);
+}
+
+/* 🗑️ Delete Button */
+.confirm-actions .btn.delete {
+  background: linear-gradient(135deg, #dc2626, #b91c1c);
+  color: white;
+}
+
+.confirm-actions .btn.delete:hover {
+  background: linear-gradient(135deg, #b91c1c, #991b1b);
+  transform: scale(1.02);
+}
+
+/* 🔄 Smooth Fade-in Animation */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}

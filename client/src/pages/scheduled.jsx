@@ -20,8 +20,9 @@ export default function Scheduled() {
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
   const [editingRuleId, setEditingRuleId] = useState(null);
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [ruleToDelete, setRuleToDelete] = useState(null);
   const { searchTerm } = useContext(SearchContext);
-
   const token = localStorage.getItem('token');
 
   const fetchRules = useCallback(async () => {
@@ -45,36 +46,29 @@ export default function Scheduled() {
     fetchRules();
   }, [fetchRules]);
 
-  function startEditing(rule) {
-    setEditingRuleId(rule._id);
-    setForm({
-      title: rule.title,
-      type: rule.type,
-      amount: rule.amount,
-      category: rule.category,
-      frequency: rule.frequency,
-      dayOfMonth: rule.dayOfMonth,
-      month: rule.month,
-      currency: rule.currency || 'USD',
-    });
-    setError(null);
-    setSuccess(null);
-  }
+  const handleDeleteClick = (id) => {
+    setRuleToDelete(id);
+    setShowConfirm(true);
+  };
 
-  async function deleteRule(id) {
-    if (!window.confirm('Delete this schedule?')) return;
+  const confirmDelete = async () => {
     try {
-      const res = await fetch(`${API_URL}/api/scheduled/${id}`, {
+      const res = await fetch(`${API_URL}/api/scheduled/${ruleToDelete}`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}` },
       });
       if (!res.ok) throw new Error('Delete failed');
+      setSuccess('✅ Schedule deleted');
+      setTimeout(() => setSuccess(null), 3000);
       fetchRules();
     } catch (err) {
       console.error(err);
-      setError(err.message || 'Failed to delete schedule');
+      setError(err.message || '❌ Failed to delete schedule');
+    } finally {
+      setShowConfirm(false);
+      setRuleToDelete(null);
     }
-  }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -95,22 +89,10 @@ export default function Scheduled() {
       });
       const result = await res.json();
       if (!res.ok) throw new Error(result.error || 'Save failed');
-
-      setSuccess(
-        editingRuleId ? 'Schedule updated successfully!' : 'Schedule saved successfully!'
-      );
+      setSuccess(editingRuleId ? 'Schedule updated successfully!' : 'Schedule saved successfully!');
       setTimeout(() => setSuccess(null), 3000);
       setEditingRuleId(null);
-      setForm({
-        title: '',
-        type: 'income',
-        amount: '',
-        category: '',
-        frequency: 'monthly',
-        dayOfMonth: 1,
-        month: 1,
-        currency: 'USD',
-      });
+      setForm({ title: '', type: 'income', amount: '', category: '', frequency: 'monthly', dayOfMonth: 1, month: 1, currency: 'USD' });
       fetchRules();
     } catch (err) {
       console.error(err);
@@ -119,32 +101,13 @@ export default function Scheduled() {
   };
 
   const months = [
-    { value: 1, name: 'January' },
-    { value: 2, name: 'February' },
-    { value: 3, name: 'March' },
-    { value: 4, name: 'April' },
-    { value: 5, name: 'May' },
-    { value: 6, name: 'June' },
-    { value: 7, name: 'July' },
-    { value: 8, name: 'August' },
-    { value: 9, name: 'September' },
-    { value: 10, name: 'October' },
-    { value: 11, name: 'November' },
-    { value: 12, name: 'December' },
+    { value: 1, name: 'January' }, { value: 2, name: 'February' }, { value: 3, name: 'March' },
+    { value: 4, name: 'April' }, { value: 5, name: 'May' }, { value: 6, name: 'June' },
+    { value: 7, name: 'July' }, { value: 8, name: 'August' }, { value: 9, name: 'September' },
+    { value: 10, name: 'October' }, { value: 11, name: 'November' }, { value: 12, name: 'December' },
   ];
 
-  const currencies = ['USD', 'EUR', 'GBP', 'INR', 'AED'];
-
-  const getCurrencySymbol = (code) => {
-    const symbols = {
-      USD: '$',
-      EUR: '€',
-      GBP: '£',
-      INR: '₹',
-      AED: 'د.إ',
-    };
-    return symbols[code] || code;
-  };
+  const getCurrencySymbol = (code) => ({ USD: '$', EUR: '€', GBP: '£', INR: '₹', AED: 'د.إ' }[code] || code);
 
   const filteredRules = rules.filter(r =>
     r.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -153,6 +116,19 @@ export default function Scheduled() {
 
   return (
     <div className="scheduled-container">
+      {showConfirm && (
+        <div className="confirm-overlay">
+          <div className="confirm-box">
+            <h3>Are you sure?</h3>
+            <p>This will permanently delete the schedule.</p>
+            <div className="confirm-actions">
+              <button className="btn cancel" onClick={() => setShowConfirm(false)}>Cancel</button>
+              <button className="btn delete" onClick={confirmDelete}>Delete</button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <h2 className="scheduled-header">
         {editingRuleId ? 'Edit Scheduled Transaction' : 'Add Scheduled Transaction'}
       </h2>
@@ -204,7 +180,7 @@ export default function Scheduled() {
             value={form.currency}
             onChange={(e) => setForm({ ...form, currency: e.target.value })}
           >
-            {currencies.map(cur => (
+            {["USD", "EUR", "GBP", "INR", "AED"].map(cur => (
               <option key={cur} value={cur}>
                 {cur} ({getCurrencySymbol(cur)})
               </option>
@@ -301,38 +277,34 @@ export default function Scheduled() {
         <table className="scheduled-table">
           <thead>
             <tr>
-              <th>Title</th>
-              <th>Type</th>
-              <th>Amount</th>
-              <th>Category</th>
-              <th>Frequency</th>
-              <th>Next Run</th>
-              <th>Actions</th>
+              <th>Title</th><th>Type</th><th>Amount</th><th>Category</th><th>Frequency</th><th>Next Run</th><th>Actions</th>
             </tr>
           </thead>
           <tbody>
             {filteredRules.map((rule) => (
               <tr key={rule._id}>
-                <td data-label="Title">{rule.title}</td>
-                <td data-label="Type">{rule.type}</td>
-                <td data-label="Amount">
-                  {getCurrencySymbol(rule.currency || 'USD')}
-                  {parseFloat(rule.amount).toFixed(2)}
-                </td>
-                <td data-label="Category">{rule.category || 'Uncategorized'}</td>
-                <td data-label="Frequency">
-                  {rule.frequency === 'monthly'
-                    ? `Monthly (day ${rule.dayOfMonth})`
-                    : `Yearly (${months.find((m) => m.value === rule.month)?.name}/${rule.dayOfMonth})`}
-                </td>
-                <td data-label="Next Run">
-                  {new Date(rule.nextRun).toLocaleDateString()}
-                </td>
-                <td data-label="Actions">
-                  <button onClick={() => startEditing(rule)} title="Edit">
-                    <FiEdit2 /> Edit
-                  </button>
-                  <button onClick={() => deleteRule(rule._id)} title="Delete">
+                <td>{rule.title}</td>
+                <td>{rule.type}</td>
+                <td>{getCurrencySymbol(rule.currency || 'USD')}{parseFloat(rule.amount).toFixed(2)}</td>
+                <td>{rule.category || 'Uncategorized'}</td>
+                <td>{rule.frequency === 'monthly' ? `Monthly (day ${rule.dayOfMonth})` : `Yearly (${months.find(m => m.value === rule.month)?.name}/${rule.dayOfMonth})`}</td>
+                <td>{new Date(rule.nextRun).toLocaleDateString()}</td>
+                <td>
+                  <button onClick={() => {
+                    setEditingRuleId(rule._id);
+                    setForm({
+                      title: rule.title,
+                      type: rule.type,
+                      amount: rule.amount,
+                      category: rule.category,
+                      frequency: rule.frequency,
+                      dayOfMonth: rule.dayOfMonth,
+                      month: rule.month,
+                      currency: rule.currency || 'USD',
+                    });
+                  }} title="Edit"><FiEdit2 /> Edit</button>
+
+                  <button onClick={() => handleDeleteClick(rule._id)} title="Delete">
                     <FiTrash2 /> Delete
                   </button>
                 </td>

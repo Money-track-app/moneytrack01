@@ -19,6 +19,13 @@ exports.createTransaction = async (req, res) => {
     const userId = new mongoose.Types.ObjectId(req.user.id);
     const { type, category, amount, date, description, currency } = req.body;
 
+    // 🔒 Free users are limited to 5 transactions
+    const txnCount = await Transaction.countDocuments({ userId });
+
+    if (!req.user.isPremium && req.user.role !== 'admin' && txnCount >= 5) {
+      return res.status(403).json({ message: 'Free plan limit reached. Upgrade to Premium to add more transactions.' });
+    }
+
     const txData = {
       userId,
       type,
