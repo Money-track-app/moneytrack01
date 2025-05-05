@@ -38,7 +38,7 @@
 }
 
 .avatar-wrapper:hover {
-  box-shadow: 0 0 0 4px #007bff33;
+  box-shadow: 0 0 10px rgba(31, 122, 236, 0.4);
 }
 
 .avatar-img,
@@ -58,11 +58,18 @@
   position: absolute;
   bottom: 0;
   right: 0;
-  background: #007bff;
+  background: linear-gradient(135deg, #1f7aec, #1abc9c);
   color: #fff;
-  padding: 6px 8px;
+  padding: 6px 10px;
   border-top-left-radius: 6px;
-  font-size: 1rem;
+  font-size: 0.95rem;
+  font-weight: 500;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+  transition: background 0.3s ease;
+}
+
+.avatar-overlay:hover {
+  background: linear-gradient(135deg, #1abc9c, #16a085);
 }
 
 .avatar-input {
@@ -73,18 +80,24 @@
   position: absolute;
   top: 6px;
   right: calc(50% - 60px - 6px);
-  background: #ff4d4f;
-  border: none;
+  background: linear-gradient(135deg, #e57373, #ef5350);
   color: white;
+  border: none;
   border-radius: 50%;
-  width: 26px;
-  height: 26px;
+  width: 28px;
+  height: 28px;
   font-size: 1rem;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 0 6px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+  transition: background 0.3s ease, transform 0.2s ease;
+}
+
+.avatar-delete:hover {
+  background: linear-gradient(135deg, #ef5350, #d32f2f);
+  transform: scale(1.05);
 }
 
 /* FORM */
@@ -132,15 +145,25 @@
   transition: background-color 0.3s ease;
 }
 
+/* ✅ Save Changes Button */
 .btn-save {
-  background-color: #007bff;
+  background: linear-gradient(135deg, #1f7aec, #1abc9c);
   color: white;
+  font-weight: 600;
+  transition: background 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
 }
 
 .btn-save:hover {
-  background-color: #1abc9c;
+  background: linear-gradient(135deg, #1abc9c, #16a085);
+  transform: scale(1.02);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
 }
 
+.btn-save:active {
+  transform: scale(0.96);
+}
+
+/* Logout Button */
 .btn-logout {
   background-color: #e74c3c;
   color: white;
@@ -185,34 +208,53 @@
   gap: 1.2rem;
 }
 
-.confirm-yes,
-.confirm-no {
+/* ✅ Confirm Yes Button */
+.confirm-yes {
+  background: linear-gradient(135deg, #1f7aec, #1abc9c);
+  color: white;
+  font-weight: 600;
   padding: 0.6rem 1.2rem;
   font-size: 1rem;
   border: none;
   border-radius: 6px;
   cursor: pointer;
-  transition: background-color 0.2s;
-}
-
-.confirm-yes {
-  background-color: #28a745;
-  color: white;
+  transition: background 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
 }
 
 .confirm-yes:hover {
-  background-color: #218838;
+  background: linear-gradient(135deg, #1abc9c, #16a085);
+  transform: scale(1.02);
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.12);
 }
 
+.confirm-yes:active {
+  transform: scale(0.96);
+}
+
+/* ✅ Confirm No Button */
 .confirm-no {
-  background-color: #e74c3c;
+  background: linear-gradient(135deg, #e57373, #ef5350);
   color: white;
+  font-weight: 600;
+  padding: 0.6rem 1.2rem;
+  font-size: 1rem;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
 }
 
 .confirm-no:hover {
-  background-color: #c0392b;
+  background: linear-gradient(135deg, #ef5350, #d32f2f);
+  transform: scale(1.02);
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.12);
 }
 
+.confirm-no:active {
+  transform: scale(0.96);
+}
+
+/* Settings Notice */
 .settings-notice {
   text-align: center;
   background-color: #e8f4fd;

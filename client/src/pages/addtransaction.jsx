@@ -2,6 +2,8 @@ import React, { useState, useContext, useEffect } from 'react';
 import axios from 'axios';
 import './addtransaction.css';
 import { CategoryContext } from '../context/categorycontext';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const API_URL = 'http://localhost:5000';
 
@@ -13,7 +15,7 @@ const AddTransaction = () => {
     amount: '',
     date: '',
     description: '',
-    currency: 'USD', // default currency
+    currency: 'USD',
   });
   const [useNewCategory, setUseNewCategory] = useState(false);
   const [newCategory, setNewCategory] = useState({ name: '', type: 'expense' });
@@ -49,7 +51,12 @@ const AddTransaction = () => {
         const { data: created } = await axios.post(
           `${API_URL}/api/categories`,
           { name: newCategory.name, type: newCategory.type },
-          { headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` } }
+          {
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${token}`,
+            },
+          }
         );
         categoryValue = created._id;
         fetchCategories();
@@ -61,30 +68,40 @@ const AddTransaction = () => {
       formData.append('amount', form.amount);
       formData.append('date', form.date);
       formData.append('description', form.description);
-      formData.append('currency', form.currency); // ✅ Add currency to form
+      formData.append('currency', form.currency);
       if (receiptFile) formData.append('receipt', receiptFile);
 
-      await axios.post(
-        `${API_URL}/api/transactions`,
-        formData,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      await axios.post(`${API_URL}/api/transactions`, formData, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
 
-      alert('Transaction added!');
+      toast.success('✅ Transaction added successfully!', {
+        position: 'top-center',
+        autoClose: 3000,
+        hideProgressBar: false,
+        pauseOnHover: true,
+        draggable: true,
+        theme: 'colored',
+      });
+
       setForm({
         type: 'expense',
         category: '',
         amount: '',
         date: '',
         description: '',
-        currency: 'USD', // ✅ Reset currency
+        currency: 'USD',
       });
       setNewCategory({ name: '', type: 'expense' });
       setUseNewCategory(false);
       setReceiptFile(null);
     } catch (err) {
       console.error('Error adding transaction:', err);
-      alert('Error adding transaction.');
+      toast.error('❌ Failed to add transaction.', {
+        position: 'top-right',
+        autoClose: 3000,
+        theme: 'colored',
+      });
     }
   };
 
@@ -92,7 +109,6 @@ const AddTransaction = () => {
     <div className="add-transaction-container">
       <h2>Add New Transaction</h2>
       <form className="transaction-form" onSubmit={handleSubmit} encType="multipart/form-data">
-        {/* Type */}
         <label>
           Type:
           <select name="type" value={form.type} onChange={handleChange}>
@@ -101,7 +117,6 @@ const AddTransaction = () => {
           </select>
         </label>
 
-        {/* Category or New Category */}
         <label>
           Category:
           <select
@@ -129,7 +144,6 @@ const AddTransaction = () => {
           </div>
         </label>
 
-        {/* New Category Fields */}
         {useNewCategory && (
           <>
             <label>
@@ -157,7 +171,6 @@ const AddTransaction = () => {
           </>
         )}
 
-        {/* Amount */}
         <label>
           Amount:
           <input
@@ -170,7 +183,6 @@ const AddTransaction = () => {
           />
         </label>
 
-        {/* Date */}
         <label>
           Date:
           <input
@@ -182,7 +194,6 @@ const AddTransaction = () => {
           />
         </label>
 
-        {/* Currency */}
         <label>
           Currency:
           <select
@@ -199,7 +210,6 @@ const AddTransaction = () => {
           </select>
         </label>
 
-        {/* Description */}
         <label>
           Description:
           <textarea
@@ -210,7 +220,6 @@ const AddTransaction = () => {
           />
         </label>
 
-        {/* Receipt File */}
         <label>
           Attach Receipt (optional):
           <input
@@ -222,9 +231,9 @@ const AddTransaction = () => {
           {receiptFile && <p>Selected file: {receiptFile.name}</p>}
         </label>
 
-        {/* Submit */}
         <button type="submit">Add Transaction</button>
       </form>
+      <ToastContainer />
     </div>
   );
 };

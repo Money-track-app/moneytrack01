@@ -26,13 +26,13 @@ exports.createTransaction = async (req, res) => {
       amount,
       date,
       description,
-      currency, // ✅ currency added here
+      currency,
     };
 
     if (req.file) {
       txData.receipt = {
         data: req.file.buffer,
-        contentType: req.file.mimetype
+        contentType: req.file.mimetype,
       };
     }
 
@@ -64,12 +64,12 @@ exports.updateTransaction = async (req, res) => {
     if (amount) tx.amount = amount;
     if (date) tx.date = date;
     if (description) tx.description = description;
-    if (currency) tx.currency = currency; // ✅ update currency if provided
+    if (currency) tx.currency = currency;
 
     if (req.file) {
       tx.receipt = {
         data: req.file.buffer,
-        contentType: req.file.mimetype
+        contentType: req.file.mimetype,
       };
     }
 
@@ -85,6 +85,7 @@ exports.updateTransaction = async (req, res) => {
 exports.deleteTransaction = async (req, res) => {
   try {
     const { id } = req.params;
+
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return res.status(400).json({ message: 'Invalid transaction ID' });
     }
@@ -94,8 +95,9 @@ exports.deleteTransaction = async (req, res) => {
       return res.status(404).json({ message: 'Transaction not found' });
     }
 
-    await tx.remove();
-    return res.json({ message: 'Transaction deleted' });
+    await Transaction.findByIdAndDelete(id); // ✅ Correct deletion
+
+    return res.json({ message: 'Transaction deleted successfully' });
   } catch (err) {
     console.error('DeleteTxn error:', err);
     return res.status(500).json({ message: 'Failed to delete transaction', error: err.message });

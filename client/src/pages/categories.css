@@ -78,27 +78,35 @@
   border: none;
   border-radius: var(--radius);
   cursor: pointer;
-  transition: background var(--transition), transform var(--transition);
+  transition: background var(--transition), transform var(--transition), box-shadow var(--transition);
 }
 .btn:active {
-  transform: scale(0.98);
+  transform: scale(0.97);
 }
+.btn:hover {
+  transform: scale(1.03);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+}
+
+/* Gradient button styles */
 .btn.export {
-  background-color: var(--color-accent);
+  background: linear-gradient(135deg, #1f7aec, #1abc9c);
   color: #fff;
 }
 .btn.export:hover {
-  background-color: var(--color-accent-hover);
+  background: linear-gradient(135deg, #1abc9c, #16a085);
 }
+
 .btn.delete,
 .btn.delete-all {
-  background-color: var(--color-error);
+  background: linear-gradient(135deg, #dc2626, #b91c1c);
   color: #fff;
 }
 .btn.delete:hover,
 .btn.delete-all:hover {
-  background-color: #b91c1c;
+  background: linear-gradient(135deg, #b91c1c, #991b1b);
 }
+
 .btn.small {
   padding: 0.4rem 0.8rem;
   font-size: 0.85rem;

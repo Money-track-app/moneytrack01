@@ -1,42 +1,75 @@
 /* client/src/components/footer.css */
 
 .app-footer {
-    padding: 1.5rem 2rem;
-    text-align: center;
-    background-color: #1abc9c; /* your chosen color */
-    font-family: 'Inter', sans-serif;
-    font-size: 0.9rem;
-    color: #ffffff;
-    margin-top: auto;
-    box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.04);
-    position: relative;
-    z-index: 10;
-  }
-  
-  .app-footer p {
-    margin: 0;
-    line-height: 1.6;
-    letter-spacing: 0.3px;
-    color: #ffffff;
-  }
-  
-  .footer-links {
-    margin-top: 0.6rem;
-    display: flex;
-    justify-content: center;
-    gap: 2rem;
-    flex-wrap: wrap;
-  }
-  
-  .footer-links a {
-    text-decoration: none;
-    color: #ffffff;
-    font-weight: 500;
-    font-size: 0.9rem;
-    transition: color 0.3s ease;
-  }
-  
-  .footer-links a:hover {
-    color: #ecf0f1; /* soft white-gray on hover */
-  }
-  
+  padding: 1.5rem 2rem;
+  text-align: center;
+  background-color: #1abc9c;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.9rem;
+  color: #ffffff;
+  margin-top: auto;
+  box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.04);
+  position: relative;
+  z-index: 10;
+}
+
+.app-footer p {
+  margin: 0;
+  line-height: 1.6;
+  letter-spacing: 0.3px;
+  color: #ffffff;
+}
+
+.footer-links {
+  margin-top: 0.6rem;
+  display: flex;
+  justify-content: center;
+  gap: 2rem;
+  flex-wrap: wrap;
+}
+
+/* ✅ Gradient Underline + Icon Hover */
+.footer-links a {
+  position: relative;
+  text-decoration: none;
+  color: #ffffff;
+  font-weight: 500;
+  font-size: 0.9rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  transition: color 0.3s ease;
+}
+
+.footer-links a::after {
+  content: "";
+  position: absolute;
+  bottom: -3px;
+  left: 0;
+  height: 2px;
+  width: 0%;
+  background: linear-gradient(90deg, #ffffff, #ecf0f1);
+  transition: width 0.3s ease;
+}
+
+.footer-links a:hover {
+  color: #ecf0f1;
+}
+
+.footer-links a:hover::after {
+  width: 100%;
+}
+
+/* Optional icon (using pseudo-element or you can use <i class="fas fa-arrow-right"> inside link) */
+.footer-links a::before {
+  content: "→";
+  opacity: 0;
+  transform: translateX(-6px);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  font-size: 0.9rem;
+}
+
+.footer-links a:hover::before {
+  opacity: 1;
+  transform: translateX(0);
+}
