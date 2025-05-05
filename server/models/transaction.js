@@ -7,11 +7,11 @@ const transactionSchema = new mongoose.Schema({
   amount: { type: Number },
   date: { type: Date },
   description: { type: String },
+  currency: { type: String, default: 'USD' }, // ✅ NEW: Currency field
   receipt: {
-    data: Buffer,           // raw file bytes
-    contentType: String     // MIME type, e.g. 'image/png' or 'application/pdf'
+    data: Buffer,
+    contentType: String
   }
 });
 
 module.exports = mongoose.model('Transaction', transactionSchema);
-

@@ -25,6 +25,17 @@ export default function Reports() {
   const doughnutRef = useRef(null);
   const barRef = useRef(null);
 
+  const getCurrencySymbol = (code) => {
+    const symbols = {
+      USD: '$',
+      EUR: '€',
+      GBP: '£',
+      INR: '₹',
+      AED: 'د.إ',
+    };
+    return symbols[code] || code;
+  };
+
   const fetchReport = () => {
     setLoading(true);
     const token = localStorage.getItem('token');
@@ -135,7 +146,7 @@ export default function Reports() {
       tx.description,
       getCategoryName(tx.category),
       tx.type,
-      tx.amount.toFixed(2)
+      `${getCurrencySymbol(tx.currency)}${tx.amount.toFixed(2)}`
     ]);
     const csv = [header, ...rows].map(r => r.join(',')).join('\n');
     saveAs(new Blob([csv], { type: 'text/csv;charset=utf-8;' }), 'transactions.csv');
@@ -149,9 +160,16 @@ export default function Reports() {
       tx.description,
       getCategoryName(tx.category),
       tx.type,
-      tx.amount.toFixed(2)
+      `${getCurrencySymbol(tx.currency)}${tx.amount.toFixed(2)}`
     ]);
-    autoTable(doc, { head, body, startY: 20, styles: { fontSize: 8 }, headStyles: { fillColor: [26, 115, 232] }, margin: { left: 10, right: 10 } });
+    autoTable(doc, {
+      head,
+      body,
+      startY: 20,
+      styles: { fontSize: 8 },
+      headStyles: { fillColor: [26, 115, 232] },
+      margin: { left: 10, right: 10 }
+    });
     doc.text('Transactions Report', 14, 15);
     doc.save('transactions.pdf');
   };
@@ -180,7 +198,13 @@ export default function Reports() {
               { label: 'Income', data: report.trend.map(d => d.income), fill: false, tension: 0.3 },
               { label: 'Expenses', data: report.trend.map(d => d.expense), fill: false, tension: 0.3 }
             ]
-          }} options={{ ...chartOptions, scales: { x: { title: { display: true, text: 'Period' } }, y: { title: { display: true, text: 'Amount' }, beginAtZero: true } } }} />
+          }} options={{
+            ...chartOptions,
+            scales: {
+              x: { title: { display: true, text: 'Period' } },
+              y: { title: { display: true, text: 'Amount' }, beginAtZero: true }
+            }
+          }} />
         </div>
       )}
 
@@ -208,7 +232,7 @@ export default function Reports() {
                 <td>{tx.description}</td>
                 <td>{getCategoryName(tx.category)}</td>
                 <td>{tx.type}</td>
-                <td>{tx.amount.toFixed(2)}</td>
+                <td>{getCurrencySymbol(tx.currency)}{tx.amount.toFixed(2)}</td>
               </tr>
             ))}
           </tbody>

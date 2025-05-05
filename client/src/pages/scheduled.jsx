@@ -15,6 +15,7 @@ export default function Scheduled() {
     frequency: 'monthly',
     dayOfMonth: 1,
     month: 1,
+    currency: 'USD',
   });
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
@@ -54,6 +55,7 @@ export default function Scheduled() {
       frequency: rule.frequency,
       dayOfMonth: rule.dayOfMonth,
       month: rule.month,
+      currency: rule.currency || 'USD',
     });
     setError(null);
     setSuccess(null);
@@ -107,6 +109,7 @@ export default function Scheduled() {
         frequency: 'monthly',
         dayOfMonth: 1,
         month: 1,
+        currency: 'USD',
       });
       fetchRules();
     } catch (err) {
@@ -129,6 +132,19 @@ export default function Scheduled() {
     { value: 11, name: 'November' },
     { value: 12, name: 'December' },
   ];
+
+  const currencies = ['USD', 'EUR', 'GBP', 'INR', 'AED'];
+
+  const getCurrencySymbol = (code) => {
+    const symbols = {
+      USD: '$',
+      EUR: '€',
+      GBP: '£',
+      INR: '₹',
+      AED: 'د.إ',
+    };
+    return symbols[code] || code;
+  };
 
   const filteredRules = rules.filter(r =>
     r.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -179,6 +195,21 @@ export default function Scheduled() {
             onChange={(e) => setForm({ ...form, amount: e.target.value })}
             required
           />
+        </div>
+
+        <div className="form-group">
+          <label htmlFor="currency">Currency</label>
+          <select
+            id="currency"
+            value={form.currency}
+            onChange={(e) => setForm({ ...form, currency: e.target.value })}
+          >
+            {currencies.map(cur => (
+              <option key={cur} value={cur}>
+                {cur} ({getCurrencySymbol(cur)})
+              </option>
+            ))}
+          </select>
         </div>
 
         <div className="form-group">
@@ -252,6 +283,7 @@ export default function Scheduled() {
                 frequency: 'monthly',
                 dayOfMonth: 1,
                 month: 1,
+                currency: 'USD',
               });
             }}
             className="btn-secondary full-width"
@@ -283,12 +315,15 @@ export default function Scheduled() {
               <tr key={rule._id}>
                 <td data-label="Title">{rule.title}</td>
                 <td data-label="Type">{rule.type}</td>
-                <td data-label="Amount">{rule.amount}</td>
-                <td data-label="Category">{rule.category}</td>
+                <td data-label="Amount">
+                  {getCurrencySymbol(rule.currency || 'USD')}
+                  {parseFloat(rule.amount).toFixed(2)}
+                </td>
+                <td data-label="Category">{rule.category || 'Uncategorized'}</td>
                 <td data-label="Frequency">
                   {rule.frequency === 'monthly'
                     ? `Monthly (day ${rule.dayOfMonth})`
-                    : `Yearly (${months.find((m) => m.value === rule.month)?.name || rule.month}/${rule.dayOfMonth})`}
+                    : `Yearly (${months.find((m) => m.value === rule.month)?.name}/${rule.dayOfMonth})`}
                 </td>
                 <td data-label="Next Run">
                   {new Date(rule.nextRun).toLocaleDateString()}

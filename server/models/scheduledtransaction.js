@@ -17,11 +17,12 @@ const scheduledSchema = new Schema({
     type: Number, 
     min: [1, 'month must be ≥1'], 
     max: [12,'month must be ≤12'] 
-  },               // only used when frequency==='yearly'
+  },
+  currency:   { type: String, default: 'USD' }, // ✅ NEW FIELD
   nextRun:    { type: Date,   required: true }
 }, { timestamps: true });
 
-// guard against accidentally setting nextRun to an insane year
+// Guard against invalid years in nextRun
 scheduledSchema.pre('save', function(next) {
   if (this.nextRun.getFullYear() > 9999 || this.nextRun.getFullYear() < 0) {
     return next(new Error('nextRun year out of range'));
@@ -30,6 +31,3 @@ scheduledSchema.pre('save', function(next) {
 });
 
 module.exports = mongoose.model('ScheduledTransaction', scheduledSchema);
-
-
-

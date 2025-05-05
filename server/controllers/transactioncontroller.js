@@ -1,13 +1,4 @@
-exports.createTransaction = async (req, res) => {
-  console.log('🚀 createTransaction called');
-  console.log('   req.body:', req.body);
-  console.log('   req.file:', !!req.file, req.file && req.file.originalname);
-  // … rest of your code …
-};
-
-// server/controllers/transactioncontroller.js
-
-const mongoose    = require('mongoose');
+const mongoose = require('mongoose');
 const Transaction = require('../models/transaction');
 
 // GET /api/transactions
@@ -26,8 +17,17 @@ exports.getTransactions = async (req, res) => {
 exports.createTransaction = async (req, res) => {
   try {
     const userId = new mongoose.Types.ObjectId(req.user.id);
-    const { type, category, amount, date, description } = req.body;
-    const txData = { userId, type, category, amount, date, description };
+    const { type, category, amount, date, description, currency } = req.body;
+
+    const txData = {
+      userId,
+      type,
+      category,
+      amount,
+      date,
+      description,
+      currency, // ✅ currency added here
+    };
 
     if (req.file) {
       txData.receipt = {
@@ -57,12 +57,14 @@ exports.updateTransaction = async (req, res) => {
       return res.status(404).json({ message: 'Transaction not found' });
     }
 
-    const { type, category, amount, date, description } = req.body;
-    if (type)        tx.type        = type;
-    if (category)    tx.category    = category;
-    if (amount)      tx.amount      = amount;
-    if (date)        tx.date        = date;
+    const { type, category, amount, date, description, currency } = req.body;
+
+    if (type) tx.type = type;
+    if (category) tx.category = category;
+    if (amount) tx.amount = amount;
+    if (date) tx.date = date;
     if (description) tx.description = description;
+    if (currency) tx.currency = currency; // ✅ update currency if provided
 
     if (req.file) {
       tx.receipt = {
@@ -99,4 +101,3 @@ exports.deleteTransaction = async (req, res) => {
     return res.status(500).json({ message: 'Failed to delete transaction', error: err.message });
   }
 };
-

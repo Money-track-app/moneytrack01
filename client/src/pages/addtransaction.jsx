@@ -1,4 +1,3 @@
-// client/src/pages/AddTransaction.jsx
 import React, { useState, useContext, useEffect } from 'react';
 import axios from 'axios';
 import './addtransaction.css';
@@ -13,13 +12,21 @@ const AddTransaction = () => {
     category: '',
     amount: '',
     date: '',
-    description: ''
+    description: '',
+    currency: 'USD', // default currency
   });
   const [useNewCategory, setUseNewCategory] = useState(false);
   const [newCategory, setNewCategory] = useState({ name: '', type: 'expense' });
   const [receiptFile, setReceiptFile] = useState(null);
 
-  // Load categories on mount
+  const currencyOptions = [
+    { code: 'USD', symbol: '$' },
+    { code: 'EUR', symbol: '€' },
+    { code: 'GBP', symbol: '£' },
+    { code: 'INR', symbol: '₹' },
+    { code: 'AED', symbol: 'د.إ' },
+  ];
+
   useEffect(() => {
     fetchCategories();
   }, [fetchCategories]);
@@ -38,7 +45,6 @@ const AddTransaction = () => {
       const token = localStorage.getItem('token');
       let categoryValue = form.category;
 
-      // 1) Create new category if requested
       if (useNewCategory) {
         const { data: created } = await axios.post(
           `${API_URL}/api/categories`,
@@ -46,20 +52,18 @@ const AddTransaction = () => {
           { headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` } }
         );
         categoryValue = created._id;
-        // refresh category list
         fetchCategories();
       }
 
-      // 2) Prepare transaction payload
       const formData = new FormData();
       formData.append('type', form.type);
       formData.append('category', categoryValue);
       formData.append('amount', form.amount);
       formData.append('date', form.date);
       formData.append('description', form.description);
+      formData.append('currency', form.currency); // ✅ Add currency to form
       if (receiptFile) formData.append('receipt', receiptFile);
 
-      // 3) Submit transaction
       await axios.post(
         `${API_URL}/api/transactions`,
         formData,
@@ -67,8 +71,14 @@ const AddTransaction = () => {
       );
 
       alert('Transaction added!');
-      // Reset form
-      setForm({ type: 'expense', category: '', amount: '', date: '', description: '' });
+      setForm({
+        type: 'expense',
+        category: '',
+        amount: '',
+        date: '',
+        description: '',
+        currency: 'USD', // ✅ Reset currency
+      });
       setNewCategory({ name: '', type: 'expense' });
       setUseNewCategory(false);
       setReceiptFile(null);
@@ -82,8 +92,7 @@ const AddTransaction = () => {
     <div className="add-transaction-container">
       <h2>Add New Transaction</h2>
       <form className="transaction-form" onSubmit={handleSubmit} encType="multipart/form-data">
-
-        {/* Transaction Type */}
+        {/* Type */}
         <label>
           Type:
           <select name="type" value={form.type} onChange={handleChange}>
@@ -92,7 +101,7 @@ const AddTransaction = () => {
           </select>
         </label>
 
-        {/* Category Selector or New Category */}
+        {/* Category or New Category */}
         <label>
           Category:
           <select
@@ -120,7 +129,7 @@ const AddTransaction = () => {
           </div>
         </label>
 
-        {/* New Category Inputs */}
+        {/* New Category Fields */}
         {useNewCategory && (
           <>
             <label>
@@ -171,6 +180,23 @@ const AddTransaction = () => {
             onChange={handleChange}
             required
           />
+        </label>
+
+        {/* Currency */}
+        <label>
+          Currency:
+          <select
+            name="currency"
+            value={form.currency}
+            onChange={handleChange}
+            required
+          >
+            {currencyOptions.map(c => (
+              <option key={c.code} value={c.code}>
+                {c.symbol} - {c.code}
+              </option>
+            ))}
+          </select>
         </label>
 
         {/* Description */}

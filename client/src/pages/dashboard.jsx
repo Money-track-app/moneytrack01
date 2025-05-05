@@ -12,7 +12,7 @@ import {
 } from 'chart.js';
 import { Line, Pie } from 'react-chartjs-2';
 import { CategoryContext } from '../context/categorycontext';
-import { SearchContext } from '../context/searchcontext'; // ✅ Added
+import { SearchContext } from '../context/searchcontext';
 
 ChartJS.register(
   CategoryScale,
@@ -30,9 +30,20 @@ const brightColors = [
   '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40',
 ];
 
+const getCurrencySymbol = (code) => {
+  const symbols = {
+    USD: '$',
+    EUR: '€',
+    GBP: '£',
+    INR: '₹',
+    AED: 'د.إ',
+  };
+  return symbols[code] || code;
+};
+
 export default function Dashboard() {
   const { categories } = useContext(CategoryContext);
-  const { searchTerm } = useContext(SearchContext); // ✅ Get global search
+  const { searchTerm } = useContext(SearchContext);
   const [summary, setSummary] = useState({
     totalBalance: 0,
     incomeThisMonth: 0,
@@ -87,7 +98,6 @@ export default function Dashboard() {
     return cat ? cat.name : 'Uncategorized';
   };
 
-  // Filtered data based on search term
   const search = searchTerm.toLowerCase();
   const filteredTx = transactions.filter(tx =>
     tx.description?.toLowerCase().includes(search) ||
@@ -99,7 +109,6 @@ export default function Dashboard() {
     item.category?.toLowerCase().includes(search)
   );
 
-  // Recent & upcoming (after filter)
   const recentTx = filteredTx.slice(0, 5);
   const upcoming = filteredScheduled
     .map((item) => ({ ...item, _parsedDate: new Date(item.nextRun) }))
@@ -107,7 +116,6 @@ export default function Dashboard() {
     .sort((a, b) => a._parsedDate - b._parsedDate)
     .slice(0, 5);
 
-  // Trend chart data
   const today = new Date();
   const dates = [];
   const incomeByDate = {};
@@ -200,7 +208,8 @@ export default function Dashboard() {
                     <td>{tx.description}</td>
                     <td>{getCategoryName(tx.category)}</td>
                     <td className={tx.type === 'income' ? 'positive' : 'negative'}>
-                      {tx.type === 'income' ? '+' : '-'}${tx.amount.toFixed(2)}
+                      {tx.type === 'income' ? '+' : '-'}
+                      {getCurrencySymbol(tx.currency)}{tx.amount.toFixed(2)}
                     </td>
                   </tr>
                 );
