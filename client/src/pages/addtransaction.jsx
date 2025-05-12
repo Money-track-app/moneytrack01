@@ -20,7 +20,7 @@ const AddTransaction = () => {
   const [useNewCategory, setUseNewCategory] = useState(false);
   const [newCategory, setNewCategory] = useState({ name: '', type: 'expense' });
   const [receiptFile, setReceiptFile] = useState(null);
-  const [user, setUser] = useState(null); // 👈 user info
+  const [user, setUser] = useState(null);
 
   const currencyOptions = [
     { code: 'USD', symbol: '$' },
@@ -48,6 +48,8 @@ const AddTransaction = () => {
     };
     fetchUser();
   }, []);
+
+  const isAdmin = user?.role === 'admin';
 
   const handleChange = e =>
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -89,6 +91,7 @@ const AddTransaction = () => {
 
       await axios.post(`${API_URL}/api/transactions`, formData, {
         headers: { Authorization: `Bearer ${token}` },
+        params: isAdmin ? { bypassLimit: true } : {}
       });
 
       toast.success('✅ Transaction added successfully!', {
@@ -217,23 +220,19 @@ const AddTransaction = () => {
 
         <label>
           Currency:
-          <select
-            name="currency"
-            value={form.currency}
-            onChange={handleChange}
-            disabled={user && !user.isPremium && user.role !== 'admin'}
-            required
-          >
-            {user && !user.isPremium && user.role !== 'admin' ? (
+          {user && !user.isPremium && user.role !== 'admin' ? (
+            <select name="currency" value={form.currency} disabled>
               <option value="USD">$ - USD</option>
-            ) : (
-              currencyOptions.map(c => (
+            </select>
+          ) : (
+            <select name="currency" value={form.currency} onChange={handleChange} required>
+              {currencyOptions.map(c => (
                 <option key={c.code} value={c.code}>
                   {c.symbol} - {c.code}
                 </option>
-              ))
-            )}
-          </select>
+              ))}
+            </select>
+          )}
         </label>
 
         <label>

@@ -129,7 +129,7 @@ export default function Settings() {
           ) : (
             <div className="avatar-placeholder">📷</div>
           )}
-          {!profile.avatarUrl && <div className="avatar-overlay">Upload</div>}
+         
         </div>
 
         {(profile.avatarUrl || avatarFile) && (

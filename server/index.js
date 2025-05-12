@@ -38,12 +38,13 @@ app.use(passport.initialize());
 app.use(passport.session());
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-// Auth: Register
+// ✅ Register Route
 app.post('/auth/register', async (req, res) => {
   try {
     const { email, password } = req.body;
-    if (await User.findOne({ email }))
+    if (await User.findOne({ email })) {
       return res.status(400).json({ message: 'User already exists' });
+    }
 
     const hashed = await bcrypt.hash(password, 10);
     const newUser = await User.create({ email, password: hashed });
@@ -53,16 +54,17 @@ app.post('/auth/register', async (req, res) => {
   }
 });
 
-// ✅ Auth: Login (with Admin Promotion)
+// ✅ Login Route with token + isPremium
 app.post('/auth/login', async (req, res) => {
   try {
     const { email, password } = req.body;
     const user = await User.findOne({ email });
+
     if (!user || !(await bcrypt.compare(password, user.password))) {
       return res.status(400).json({ message: 'Invalid credentials' });
     }
 
-    // ✅ Auto-promote if admin email logs in
+    // Promote admin
     if (email === 'admin@moneytrack.com' && user.role !== 'admin') {
       user.role = 'admin';
       user.isPremium = true;
@@ -75,14 +77,19 @@ app.post('/auth/login', async (req, res) => {
       { expiresIn: '1d' }
     );
 
-    res.json({ message: 'Login successful', token });
+    res.json({
+      message: 'Login successful',
+      token,
+      isPremium: user.isPremium
+    });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 });
 
-// Google OAuth
+// ✅ Google OAuth
 app.get('/auth/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
+
 app.get('/auth/google/callback',
   passport.authenticate('google', { failureRedirect: '/login', session: false }),
   (req, res) => {
@@ -91,37 +98,29 @@ app.get('/auth/google/callback',
   }
 );
 
-// Middleware
+// Auth middleware
 const authenticate = require('./middleware/authenticate');
 
 // Routes
-const reportRoutes = require('./routes/reportroutes');
-const transactionRoutes = require('./routes/transactionroutes');
-const receiptsRoutes = require('./routes/receiptsroutes');
-const profileRoutes = require('./routes/profileroutes');
-const categoryRoutes = require('./routes/categoriesroutes');
-const userRoutes = require('./routes/user');
+app.use('/api/reports', require('./routes/reportroutes'));
+app.use('/api/transactions', require('./routes/transactionroutes'));
+app.use('/api/receipts', require('./routes/receiptsroutes'));
+app.use('/api/profile', authenticate, require('./routes/profileroutes'));
+app.use('/api/categories', require('./routes/categoriesroutes'));
+app.use('/api/user', require('./routes/user'));
+app.use('/api/export', require('./routes/export'));
 
-
+// Conditionally load scheduled routes
 let scheduledRoutes = require('./routes/scheduledroutes');
 if (scheduledRoutes && typeof scheduledRoutes.default === 'function') {
   scheduledRoutes = scheduledRoutes.default;
 }
-
-// Mount API Routes
-app.use('/api/reports', reportRoutes);
-app.use('/api/transactions', transactionRoutes);
-app.use('/api/receipts', receiptsRoutes);
 app.use('/api/scheduled', authenticate, scheduledRoutes);
-app.use('/api/profile', authenticate, profileRoutes);
-app.use('/api/categories', categoryRoutes);
-app.use('/api/user', userRoutes);
 
-
-// Root route
+// Root Route
 app.get('/', (req, res) => res.send('✅ Backend is running!'));
 
-// DB Connect + Start Server + Cron
+// MongoDB Connection + Server Boot + Cron Job
 mongoose.connect(process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/moneytrack', {
   useNewUrlParser: true,
   useUnifiedTopology: true
@@ -129,7 +128,7 @@ mongoose.connect(process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/moneytrack'
 .then(() => {
   console.log('✅ Connected to MongoDB');
 
-  // ⏰ Daily cron job to execute scheduled transactions
+  // ⏰ Daily scheduled transaction handler
   cron.schedule('0 0 * * *', async () => {
     const now = dayjs();
     const due = await ScheduledTransaction.find({ nextRun: { $lte: now.toDate() } });

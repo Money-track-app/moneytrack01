@@ -22,14 +22,24 @@ const LoginForm = () => {
         headers: {
           'Content-Type': 'application/json',
         },
-        credentials: 'include',
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ email, password }), // ✅ No 'credentials: include'
       });
 
       const data = await response.json();
+      console.log('✅ Login response:', data); // Debug
 
-      if (response.ok) {
+      if (response.ok && data.token) {
+        // ✅ Store token in localStorage
         localStorage.setItem('token', data.token);
+
+        // ✅ Decode payload to extract role
+        const payload = JSON.parse(atob(data.token.split('.')[1]));
+        localStorage.setItem('role', payload.role || '');
+
+        // ✅ Store isPremium safely
+        const isPremium = payload.role === 'admin' ? true : data.isPremium === true;
+        localStorage.setItem('isPremium', isPremium ? 'true' : 'false');
+
         setEmail('');
         setPassword('');
         showToast('success', 'Login successful!');
@@ -37,7 +47,8 @@ const LoginForm = () => {
       } else {
         showToast('error', data.message || 'Login failed');
       }
-    } catch {
+    } catch (err) {
+      console.error('❌ Login error:', err);
       showToast('error', 'An error occurred. Please try again.');
     }
   };
@@ -50,8 +61,6 @@ const LoginForm = () => {
     <>
       <form className="auth-form" onSubmit={handleLogin}>
         <img src="/logo.png" alt="MoneyTrack Logo" className="auth-logo-large" />
-
-    
 
         <div className="input-wrapper">
           <span className="input-icon">📧</span>

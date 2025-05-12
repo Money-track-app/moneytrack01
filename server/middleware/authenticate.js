@@ -1,30 +1,28 @@
-module.exports = (req, res, next) => {
-  console.log('>>> Authorization header:', req.headers.authorization);
-  if (!req.headers.authorization) {
-    return res.status(401).json({ message: 'Missing Authorization header' });
-  }
-  // …rest of your code…
-};
-
-// server/middleware/authenticate.js
 const jwt = require('jsonwebtoken');
+const User = require('../models/user'); // ✅ import the user model
 
-module.exports = (req, res, next) => {
+module.exports = async (req, res, next) => {
   const header = req.headers.authorization;
   if (!header) {
     return res.status(401).json({ message: 'Missing Authorization header' });
   }
 
-  // Expect header of form "Bearer <token>"
   const token = header.split(' ')[1];
   if (!token) {
     return res.status(401).json({ message: 'Malformed Authorization header' });
   }
 
   try {
-    // use the same secret you sign with in signup/login
     const payload = jwt.verify(token, process.env.JWT_SECRET || 'secretkey');
-    req.user = { id: payload.id, email: payload.email };  
+
+    // ✅ Fetch full user from DB
+    const user = await User.findById(payload.id);
+    if (!user) {
+      return res.status(401).json({ message: 'User not found' });
+    }
+
+    // ✅ Attach entire user to req.user
+    req.user = user;
     next();
   } catch (err) {
     return res.status(401).json({ message: 'Invalid or expired token' });

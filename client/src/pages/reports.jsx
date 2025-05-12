@@ -1,9 +1,6 @@
 import React, { useEffect, useState, useRef, useContext } from 'react';
 import { Doughnut, Bar, Line } from 'react-chartjs-2';
 import { saveAs } from 'file-saver';
-import * as XLSX from 'xlsx';
-import { jsPDF } from 'jspdf';
-import autoTable from 'jspdf-autotable';
 import 'chart.js/auto';
 import './reports.css';
 
@@ -65,6 +62,9 @@ export default function Reports() {
   useEffect(fetchReport, [start, end]);
 
   const checkExportLimit = async () => {
+    const role = localStorage.getItem('role');
+    if (role === 'admin') return true;
+
     try {
       const token = localStorage.getItem('token');
       const res = await fetch('http://localhost:5000/api/export/check', {
@@ -78,8 +78,61 @@ export default function Reports() {
       if (!result.allowed) showToast('❌ Export limit reached. Upgrade to Premium.');
       return result.allowed;
     } catch {
-      showToast('❌ Export limit reached. Upgrade to Premium.');
+      showToast('❌ Export limit check failed.');
       return false;
+    }
+  };
+
+  const exportCSV = async () => {
+    const allowed = await checkExportLimit();
+    if (!allowed) return;
+
+    const token = localStorage.getItem('token');
+
+    try {
+      const res = await fetch('http://localhost:5000/api/export/csv', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (!res.ok) throw new Error('CSV download failed');
+      const blob = await res.blob();
+      saveAs(blob, 'transactions.csv');
+      showToast('✅ CSV exported successfully!');
+    } catch (err) {
+      console.error(err);
+      showToast('❌ CSV export failed');
+    }
+  };
+
+  const exportPDF = async () => {
+    const allowed = await checkExportLimit();
+    if (!allowed) return;
+
+    const token = localStorage.getItem('token');
+
+    try {
+      const res = await fetch('http://localhost:5000/api/export/pdf', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (!res.ok) throw new Error('PDF download failed');
+
+      const blob = await res.blob();
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'transactions.pdf';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+
+      showToast('✅ PDF exported successfully!');
+    } catch (err) {
+      console.error('❌ exportPDF error:', err);
+      showToast('❌ PDF export failed');
     }
   };
 
@@ -158,47 +211,6 @@ export default function Reports() {
 
   const clearFilters = () => { setFilteredTxns(null); setStart(''); setEnd(''); };
 
-  const exportCSV = async () => {
-    const allowed = await checkExportLimit();
-    if (!allowed) return;
-
-    const header = ['Date', 'Description', 'Category', 'Type', 'Amount'];
-    const rows = searchFilteredTxns.map(tx => [
-      new Date(tx.date).toLocaleDateString(),
-      tx.description,
-      getCategoryName(tx.category),
-      tx.type,
-      `${getCurrencySymbol(tx.currency)}${tx.amount.toFixed(2)}`
-    ]);
-    const csv = [header, ...rows].map(r => r.join(',')).join('\n');
-    saveAs(new Blob([csv], { type: 'text/csv;charset=utf-8;' }), 'transactions.csv');
-  };
-
-  const exportPDF = async () => {
-    const allowed = await checkExportLimit();
-    if (!allowed) return;
-
-    const doc = new jsPDF();
-    const head = [['Date', 'Description', 'Category', 'Type', 'Amount']];
-    const body = searchFilteredTxns.map(tx => [
-      new Date(tx.date).toLocaleDateString(),
-      tx.description,
-      getCategoryName(tx.category),
-      tx.type,
-      `${getCurrencySymbol(tx.currency)}${tx.amount.toFixed(2)}`
-    ]);
-    autoTable(doc, {
-      head,
-      body,
-      startY: 20,
-      styles: { fontSize: 8 },
-      headStyles: { fillColor: [26, 115, 232] },
-      margin: { left: 10, right: 10 }
-    });
-    doc.text('Transactions Report', 14, 15);
-    doc.save('transactions.pdf');
-  };
-
   return (
     <div className="reports-page">
       <h1>Financial Reports</h1>
@@ -264,7 +276,6 @@ export default function Reports() {
         </table>
       </div>
 
-      {/* ✅ Toast Notification */}
       {toast.show && (
         <div className="toast-notification">
           {toast.message}

@@ -19,6 +19,8 @@ import upgrade from './pages/upgrade';   // ✅ Premium Upgrade page
 import support from './pages/support';   // ✅ Help & Support page
 import Privacy from './pages/privacy'; // ✅ Privacy Policy page
 import Terms from './pages/terms';     // ✅ Terms of Service page
+import TestExport from './pages/TestExport';
+
 
 
 // Layout Components
@@ -91,6 +93,7 @@ function App() {
             <Route path="/support" element={<DashboardLayout><Support /></DashboardLayout>} /> {/* ✅ Help Route */}
             <Route path="/privacy" element={<DashboardLayout><Privacy /></DashboardLayout>} /> {/* ✅ Help Route */}
             <Route path="/terms" element={<DashboardLayout><Terms/></DashboardLayout>} /> {/* ✅ Help Route */}
+            <Route path="/test-export" element={<TestExport />} />
           </Routes>
         </Router>
       </SearchProvider>

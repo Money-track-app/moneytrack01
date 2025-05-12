@@ -47,9 +47,8 @@
     color: #555;
   }
   
-  /* Buy Button */
   .buy-button {
-    background-color: #1abc9c;
+    background: linear-gradient(135deg, #1f7aec, #1abc9c);
     color: white;
     font-size: 1.1rem;
     font-weight: bold;
@@ -57,11 +56,17 @@
     border: none;
     border-radius: 8px;
     cursor: pointer;
-    transition: background 0.3s ease;
+    transition: background 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
   }
   
   .buy-button:hover {
-    background-color: #17a589;
+    background: linear-gradient(135deg, #1abc9c, #16a085);
+    transform: scale(1.03);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  }
+  
+  .buy-button:active {
+    transform: scale(0.96);
   }
   
   /* Responsive Padding */

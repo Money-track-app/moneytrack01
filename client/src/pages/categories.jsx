@@ -2,7 +2,7 @@ import React, { useState, useEffect, useContext, useCallback } from 'react';
 import './categories.css';
 import { CategoryContext } from '../context/categorycontext';
 import { SearchContext } from '../context/searchcontext';
-import { FaCog, FaFileCsv, FaFilePdf } from 'react-icons/fa';
+import { FaCog } from 'react-icons/fa';
 import { saveAs } from 'file-saver';
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
@@ -19,8 +19,10 @@ export default function Categories() {
   const [selectedCats, setSelectedCats] = useState([]);
   const [selectMode, setSelectMode] = useState(false);
   const [toast, setToast] = useState({ show: false, message: '' });
+  const [confirmModal, setConfirmModal] = useState({ show: false, message: '', onConfirm: null });
 
   const token = localStorage.getItem('token');
+  const role = localStorage.getItem('role');
 
   const showToast = (msg) => {
     setToast({ show: true, message: msg });
@@ -28,6 +30,7 @@ export default function Categories() {
   };
 
   const checkExportAllowed = async () => {
+    if (role === 'admin') return true;
     try {
       const res = await fetch(`${API_URL}/api/export/check`, {
         method: 'POST',
@@ -40,9 +43,114 @@ export default function Categories() {
       if (!result.allowed) showToast('❌ Export limit reached. Upgrade to Premium.');
       return result.allowed;
     } catch {
-      showToast('❌ Export limit reached. Upgrade to Premium.');
+      showToast('❌ Export check failed.');
       return false;
     }
+  };
+
+  const logExport = async (type) => {
+    try {
+      const res = await fetch(`${API_URL}/api/export/log`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ type }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        showToast(`❌ ${data.message || 'Export failed'}`);
+        return false;
+      }
+
+      return true;
+    } catch {
+      showToast('❌ Export log failed.');
+      return false;
+    }
+  };
+
+  const exportCategoryCSV = async (cat) => {
+    const allowed = await checkExportAllowed();
+    if (!allowed) return;
+    const logged = await logExport('csv');
+    if (!logged) return;
+
+    const header = ['Date', 'Description', 'Amount'];
+    const rows = cat.transactions.map((tx) => [
+      new Date(tx.date).toLocaleDateString(),
+      tx.description,
+      tx.amount.toFixed(2),
+    ]);
+    const csv = [header, ...rows].map((r) => r.join(',')).join('\n');
+    saveAs(new Blob([csv], { type: 'text/csv;charset=utf-8;' }), `${cat.name}_transactions.csv`);
+    showToast(`✅ ${cat.name} CSV exported!`);
+  };
+
+  const exportCategoryPDF = async (cat) => {
+    const allowed = await checkExportAllowed();
+    if (!allowed) return;
+    const logged = await logExport('pdf');
+    if (!logged) return;
+
+    const doc = new jsPDF();
+    autoTable(doc, {
+      head: [['Date', 'Description', 'Amount']],
+      body: cat.transactions.map((tx) => [
+        new Date(tx.date).toLocaleDateString(),
+        tx.description,
+        tx.amount.toFixed(2),
+      ]),
+      startY: 20,
+    });
+    doc.text(cat.name, 14, 15);
+    doc.save(`${cat.name}_transactions.pdf`);
+    showToast(`✅ ${cat.name} PDF exported!`);
+  };
+
+  const handleExportAllCSV = async () => {
+    const allowed = await checkExportAllowed();
+    if (!allowed) return;
+    const logged = await logExport('csv');
+    if (!logged) return;
+
+    const allTxns = grouped.flatMap((cat) =>
+      cat.transactions.map((tx) => [
+        new Date(tx.date).toLocaleDateString(),
+        tx.description,
+        tx.amount.toFixed(2),
+      ])
+    );
+    const csv = [['Date', 'Description', 'Amount'], ...allTxns].map((r) => r.join(',')).join('\n');
+    saveAs(new Blob([csv], { type: 'text/csv;charset=utf-8;' }), 'all_transactions.csv');
+    showToast('✅ All transactions exported as CSV');
+  };
+
+  const handleExportAllPDF = async () => {
+    const allowed = await checkExportAllowed();
+    if (!allowed) return;
+    const logged = await logExport('pdf');
+    if (!logged) return;
+
+    const allTxns = grouped.flatMap((cat) =>
+      cat.transactions.map((tx) => [
+        new Date(tx.date).toLocaleDateString(),
+        tx.description,
+        tx.amount.toFixed(2),
+      ])
+    );
+
+    const doc = new jsPDF();
+    autoTable(doc, {
+      head: [['Date', 'Description', 'Amount']],
+      body: allTxns,
+      startY: 20,
+    });
+    doc.text('All Transactions', 14, 15);
+    doc.save('all_transactions.pdf');
+    showToast('✅ All transactions exported as PDF');
   };
 
   const loadTransactions = useCallback(async () => {
@@ -69,125 +177,65 @@ export default function Categories() {
     loadTransactions();
   }, [fetchCategories, loadTransactions]);
 
-  const exportAllCSV = async () => {
-    const allowed = await checkExportAllowed();
-    if (!allowed) return;
-    const header = ['Category', 'Date', 'Description', 'Amount'];
-    const rows = [];
-    categories.forEach((cat) => {
-      const catTransactions = transactions.filter((tx) => tx.category === cat._id);
-      catTransactions.forEach((tx) => {
-        rows.push([
-          cat.name,
-          new Date(tx.date).toLocaleDateString(),
-          tx.description,
-          tx.amount.toFixed(2),
-        ]);
-      });
+  const handleDeleteTransaction = (txId) => {
+    setConfirmModal({
+      show: true,
+      message: 'Are you sure you want to delete this transaction?',
+      onConfirm: async () => {
+        await fetch(`${API_URL}/api/transactions/${txId}`, {
+          method: 'DELETE',
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        loadTransactions();
+      },
     });
-    const csv = [header, ...rows].map((r) => r.join(',')).join('\n');
-    saveAs(new Blob([csv], { type: 'text/csv;charset=utf-8;' }), 'all_categories_transactions.csv');
   };
 
-  const exportAllPDF = async () => {
-    const allowed = await checkExportAllowed();
-    if (!allowed) return;
-    const doc = new jsPDF();
-    const tableRows = [];
-    categories.forEach((cat) => {
-      const catTransactions = transactions.filter((tx) => tx.category === cat._id);
-      catTransactions.forEach((tx) => {
-        tableRows.push([
-          cat.name,
-          new Date(tx.date).toLocaleDateString(),
-          tx.description,
-          tx.amount.toFixed(2),
-        ]);
-      });
+  const handleDeleteCategory = (id) => {
+    setConfirmModal({
+      show: true,
+      message: 'Are you sure you want to delete this category and its transactions?',
+      onConfirm: async () => {
+        await fetch(`${API_URL}/api/categories/${id}`, {
+          method: 'DELETE',
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        fetchCategories();
+        loadTransactions();
+        setOpenMenu(null);
+      },
     });
-    autoTable(doc, {
-      head: [['Category', 'Date', 'Description', 'Amount']],
-      body: tableRows,
-      startY: 20,
-    });
-    doc.text('All Categories Transactions', 14, 15);
-    doc.save('all_categories_transactions.pdf');
   };
 
-  const exportCategoryCSV = async (cat) => {
-    const allowed = await checkExportAllowed();
-    if (!allowed) return;
-    const header = ['Date', 'Description', 'Amount'];
-    const rows = cat.transactions.map((tx) => [
-      new Date(tx.date).toLocaleDateString(),
-      tx.description,
-      tx.amount.toFixed(2),
-    ]);
-    const csv = [header, ...rows].map((r) => r.join(',')).join('\n');
-    saveAs(new Blob([csv], { type: 'text/csv;charset=utf-8;' }), `${cat.name}_transactions.csv`);
-  };
-
-  const exportCategoryPDF = async (cat) => {
-    const allowed = await checkExportAllowed();
-    if (!allowed) return;
-    const doc = new jsPDF();
-    autoTable(doc, {
-      head: [['Date', 'Description', 'Amount']],
-      body: cat.transactions.map((tx) => [
-        new Date(tx.date).toLocaleDateString(),
-        tx.description,
-        tx.amount.toFixed(2),
-      ]),
-      startY: 20,
+  const handleDeleteSelected = () => {
+    if (!selectedCats.length) {
+      setSelectMode(false);
+      return;
+    }
+    setConfirmModal({
+      show: true,
+      message: `Are you sure you want to delete ${selectedCats.length} selected categories and their transactions?`,
+      onConfirm: async () => {
+        await Promise.all(
+          selectedCats.map((id) =>
+            fetch(`${API_URL}/api/categories/${id}`, {
+              method: 'DELETE',
+              headers: { Authorization: `Bearer ${token}` },
+            })
+          )
+        );
+        setSelectedCats([]);
+        setSelectMode(false);
+        fetchCategories();
+        loadTransactions();
+      },
     });
-    doc.text(cat.name, 14, 15);
-    doc.save(`${cat.name}_transactions.pdf`);
-  };
-
-  const handleDeleteCategory = async (id) => {
-    if (!window.confirm('Delete this category and its transactions?')) return;
-    await fetch(`${API_URL}/api/categories/${id}`, {
-      method: 'DELETE',
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    fetchCategories();
-    loadTransactions();
-    setOpenMenu(null);
-  };
-
-  const handleDeleteTransaction = async (txId) => {
-    if (!window.confirm('Delete this transaction?')) return;
-    await fetch(`${API_URL}/api/transactions/${txId}`, {
-      method: 'DELETE',
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    loadTransactions();
   };
 
   const handleSelectCat = (id) => {
     setSelectedCats((prev) =>
       prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
     );
-  };
-
-  const handleDeleteSelected = async () => {
-    if (!selectedCats.length) {
-      setSelectMode(false);
-      return;
-    }
-    if (!window.confirm(`Delete ${selectedCats.length} selected categories and their transactions?`)) return;
-    await Promise.all(
-      selectedCats.map((id) =>
-        fetch(`${API_URL}/api/categories/${id}`, {
-          method: 'DELETE',
-          headers: { Authorization: `Bearer ${token}` },
-        })
-      )
-    );
-    setSelectedCats([]);
-    setSelectMode(false);
-    fetchCategories();
-    loadTransactions();
   };
 
   if (loading) return <p className="center">Loading…</p>;
@@ -204,17 +252,14 @@ export default function Categories() {
   return (
     <div className="categories-container">
       <h1>Categories</h1>
+
       <div className="toolbar">
-        {!selectMode && (
-          <>
-            <button className="btn export small" onClick={exportAllCSV}>
-              <FaFileCsv /> Export All CSV
-            </button>
-            <button className="btn export small" onClick={exportAllPDF}>
-              <FaFilePdf /> Export All PDF
-            </button>
-          </>
-        )}
+        <button className="btn export-all" onClick={handleExportAllCSV}>
+          Export All CSV
+        </button>
+        <button className="btn export-all" onClick={handleExportAllPDF}>
+          Export All PDF
+        </button>
         {selectMode ? (
           <button className="btn delete-all small" onClick={handleDeleteSelected}>
             Delete Selected ({selectedCats.length})
@@ -291,10 +336,34 @@ export default function Categories() {
         </section>
       ))}
 
-      {/* ✅ Toast Notification */}
       {toast.show && (
         <div className="toast-notification">
           {toast.message}
+        </div>
+      )}
+
+      {confirmModal.show && (
+        <div className="modal-overlay">
+          <div className="modal-box">
+            <p>{confirmModal.message}</p>
+            <div className="modal-actions">
+              <button
+                className="btn confirm-yes"
+                onClick={() => {
+                  confirmModal.onConfirm();
+                  setConfirmModal({ show: false, message: '', onConfirm: null });
+                }}
+              >
+                Yes
+              </button>
+              <button
+                className="btn confirm-no"
+                onClick={() => setConfirmModal({ show: false, message: '', onConfirm: null })}
+              >
+                No
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>
