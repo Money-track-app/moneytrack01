@@ -21,7 +21,7 @@
   align-items: center;
   flex: 1;
   min-width: 200px;
-  max-width: 260px;
+  max-width: 280px;
 }
 
 .search-bar input {
@@ -73,17 +73,137 @@
   flex-shrink: 0;
 }
 
+/* 🔔 Notification Icon + Wrapper */
+.notification-wrapper {
+  position: relative;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 12px; /* ✅ spacing from upgrade button */
+}
+
 .notification-btn {
   background: none;
   border: none;
   color: #555;
   font-size: 1.2rem;
   cursor: pointer;
+  position: relative;
+  padding: 0;
+  margin: 0;
+  line-height: 1;
   transition: color 0.3s ease;
 }
 
 .notification-btn:hover {
   color: #1abc9c;
+}
+
+.notification-btn:focus,
+.notification-btn:focus-visible,
+.notification-btn:focus:not(:focus-visible) {
+  outline: none;
+  box-shadow: none;
+}
+
+.notification-badge {
+  position: absolute;
+  top: -4px;
+  right: -2px;
+  background: #dc2626;
+  color: white;
+  border-radius: 50%;
+  font-size: 10px;
+  font-weight: 600;
+  padding: 2px 5px;
+  line-height: 1;
+  box-shadow: 0 0 0 2px #ffffff;
+  z-index: 2;
+}
+
+/* 🔽 Notification Dropdown */
+.notification-dropdown {
+  position: absolute;
+  top: 36px;
+  right: 0;
+  width: 320px;
+  background: #ffffff;
+  border: 1px solid #e0e0e0;
+  border-radius: 10px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+  z-index: 1000;
+  padding: 15px;
+  animation: fadeSlideDown 0.3s ease;
+}
+
+@keyframes fadeSlideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.notification-dropdown h4 {
+  font-size: 16px;
+  margin-bottom: 10px;
+  font-weight: 600;
+  color: #111827;
+}
+
+.notification-dropdown ul {
+  list-style: none;
+  max-height: 220px;
+  overflow-y: auto;
+  padding: 0;
+  margin: 0;
+}
+
+.notification-dropdown li {
+  padding: 12px 10px;
+  border-bottom: 1px solid #f1f1f1;
+  font-size: 14px;
+  color: #333;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: background 0.2s ease;
+}
+
+.notification-dropdown li:hover {
+  background-color: #f9f9f9;
+}
+
+.notification-dropdown li.read {
+  opacity: 0.6;
+}
+
+.notification-dropdown li.unread {
+  font-weight: 500;
+  background-color: #f9fdfd;
+}
+
+.notification-dropdown li button {
+  background: none;
+  border: none;
+  color: #2563eb;
+  font-size: 12px;
+  cursor: pointer;
+  font-weight: 500;
+  padding: 0;
+}
+
+.notification-empty {
+  text-align: center;
+  padding: 16px 0;
+  font-style: italic;
+  color: #999;
+  font-size: 14px;
 }
 
 /* ✅ Gradient Upgrade Button */
@@ -110,7 +230,7 @@
   transform: scale(0.96);
 }
 
-/* ✅ Responsive */
+/* ✅ Responsive Design */
 @media (max-width: 768px) {
   .app-header {
     flex-direction: column;
@@ -131,5 +251,13 @@
   .upgrade-btn {
     padding: 0.4rem 1rem;
     font-size: 0.85rem;
+  }
+
+  .notification-dropdown {
+    right: auto;
+    left: 0;
+    width: 100%;
+    max-width: 100%;
+    border-radius: 0 0 10px 10px;
   }
 }

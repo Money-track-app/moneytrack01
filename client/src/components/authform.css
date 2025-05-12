@@ -69,7 +69,7 @@
   transform: translateY(-50%) translateX(2px);
 }
 
-/* ✅ Main button with #1abc9c hover effect */
+/* ✅ Main button with hover effect */
 .primary-btn {
   background-color: #1a1a2e;
   color: white;
@@ -108,7 +108,7 @@
   margin: 0 10px;
 }
 
-/* ✅ Google button with #1abc9c hover effect */
+/* ✅ Google button with hover effect */
 .google-btn {
   display: flex;
   align-items: center;
@@ -146,38 +146,62 @@
   margin-top: -6px;
 }
 
-/* Toast Notification */
 .custom-toast {
   position: fixed;
-  bottom: 30px;
+  top: 20px;
   left: 50%;
-  transform: translateX(-50%);
-  padding: 12px 20px;
-  border-radius: 6px;
-  color: white;
-  font-size: 14px;
-  z-index: 999;
-  animation: slideUpFade 0.5s ease;
+  transform: translateX(-50%) translateY(-10px); /* Ensure it's centered horizontally */
+  background-color: #dc2626;
+  color: #fff !important;
+  padding: 16px 24px;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 600;
+  font-family: 'Segoe UI', sans-serif;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+  min-width: 280px;
+  max-width: 90vw;
+  text-align: center;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  /* ✅ Animation ensures smooth fade and stays centered */
+  animation: toastEnter 0.4s ease forwards, toastExit 0.3s ease 2.7s forwards;
 }
 
+/* Success and error variants */
 .custom-toast.success {
-  background-color: #28a745;
+  background: linear-gradient(135deg, #16a34a, #22c55e);
 }
 
 .custom-toast.error {
-  background-color: #dc3545;
+  background: linear-gradient(135deg, #dc2626, #f87171);
 }
 
-@keyframes slideUpFade {
-  from {
+/* ✅ Appear animation - stay horizontally centered at all times */
+@keyframes toastEnter {
+  0% {
     opacity: 0;
-    transform: translateX(-50%) translateY(20px);
+    transform: translateX(-50%) translateY(-20px);
   }
-  to {
+  100% {
     opacity: 1;
     transform: translateX(-50%) translateY(0);
   }
 }
+
+/* ✅ Disappear animation - fade out upward, still centered */
+@keyframes toastExit {
+  100% {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-20px);
+  }
+}
+
+
 
 /* Password Strength Text */
 .password-strength {
@@ -221,3 +245,33 @@
     transform: scale(1);
   }
 }
+
+/* Forgot password / back-to-login toggle */
+.extra-links {
+  margin-top: 8px;
+  text-align: center;
+}
+
+.back-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  background-color: #1a1a2e;
+  color: white;
+  padding: 12px;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 500;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  width: 100%;
+}
+
+.back-link:hover {
+  background-color: #1abc9c;
+  box-shadow: 0 0 10px rgba(26, 188, 156, 0.6);
+  transform: scale(1.02);
+}
+

@@ -254,12 +254,14 @@ export default function Categories() {
       <h1>Categories</h1>
 
       <div className="toolbar">
-        <button className="btn export-all" onClick={handleExportAllCSV}>
-          Export All CSV
-        </button>
-        <button className="btn export-all" onClick={handleExportAllPDF}>
-          Export All PDF
-        </button>
+        <div className="export-group">
+          <button className="btn export-all" onClick={handleExportAllCSV}>
+            Export All CSV
+          </button>
+          <button className="btn export-all" onClick={handleExportAllPDF}>
+            Export All PDF
+          </button>
+        </div>
         {selectMode ? (
           <button className="btn delete-all small" onClick={handleDeleteSelected}>
             Delete Selected ({selectedCats.length})

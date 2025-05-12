@@ -23,6 +23,7 @@ import TestExport from './pages/TestExport';
 
 
 
+
 // Layout Components
 import sidebar from './components/sidebar';
 import header from './components/header';
@@ -94,6 +95,7 @@ function App() {
             <Route path="/privacy" element={<DashboardLayout><Privacy /></DashboardLayout>} /> {/* ✅ Help Route */}
             <Route path="/terms" element={<DashboardLayout><Terms/></DashboardLayout>} /> {/* ✅ Help Route */}
             <Route path="/test-export" element={<TestExport />} />
+            
           </Routes>
         </Router>
       </SearchProvider>

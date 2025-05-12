@@ -216,49 +216,59 @@ export default function Dashboard() {
       </div>
 
       <div className="details-container">
-  <div className="list-section" data-aos="fade-up">
-    <h4>Recent Transactions</h4>
-    <table>
-      <thead>
-        <tr>
-          <th>Date</th><th>Description</th><th>Category</th><th>Amount</th>
-        </tr>
-      </thead>
-      <tbody>
-        {recentTx.map((tx) => {
-          const d = new Date(tx.date);
-          return (
-            <tr key={tx._id}>
-              <td>{isNaN(d.getTime()) ? '—' : d.toLocaleDateString()}</td>
-              <td>{tx.description}</td>
-              <td>{getCategoryName(tx.category)}</td>
-              <td className={tx.type === 'income' ? 'positive' : 'negative'}>
-                {tx.type === 'income' ? '+' : '-'}
-                {getCurrencySymbol(tx.currency)}{tx.amount.toFixed(2)}
-              </td>
-            </tr>
-          );
-        })}
-      </tbody>
-    </table>
-  </div>
+        <div className="list-section" data-aos="fade-up">
+          <h4>Recent Transactions</h4>
+          <table>
+            <thead>
+              <tr>
+                <th>Date</th><th>Description</th><th>Category</th><th>Amount</th>
+              </tr>
+            </thead>
+            <tbody>
+              {recentTx.map((tx) => {
+                const d = new Date(tx.date);
+                return (
+                  <tr key={tx._id}>
+                    <td>{isNaN(d.getTime()) ? '—' : d.toLocaleDateString()}</td>
+                    <td>{tx.description}</td>
+                    <td>{getCategoryName(tx.category)}</td>
+                    <td className={tx.type === 'income' ? 'positive' : 'negative'}>
+                      {tx.type === 'income' ? '+' : '-'}
+                      {getCurrencySymbol(tx.currency)}{tx.amount.toFixed(2)}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
 
-  <div className="list-section" data-aos="fade-up" data-aos-delay="100">
-    <h4>Upcoming Scheduled</h4>
-    <ul>
-      {upcoming.length > 0 ? (
-        upcoming.map((item) => (
-          <li key={item._id}>
-            {item._parsedDate.toLocaleDateString()} – ${item.amount.toFixed(2)}
-          </li>
-        ))
-      ) : (
-        <li>No upcoming items</li>
-      )}
-    </ul>
-  </div>
-</div>
-
+        <div className="upcoming-scheduled-list" data-aos="fade-up" data-aos-delay="100">
+          <h4>Upcoming Scheduled</h4>
+          <ul>
+            {upcoming.length > 0 ? (
+              upcoming.map((item) => (
+                <li key={item._id} className={item.type === 'income' ? 'income-item' : 'expense-item'}>
+                  <div className="scheduled-left">
+                    <span className="scheduled-icon">{item.type === 'income' ? '💰' : '💸'}</span>
+                    <div>
+                      <div className="scheduled-date">{item._parsedDate.toLocaleDateString()}</div>
+                      <div className={`scheduled-category ${item.type}`}>
+                        {item.category || 'Uncategorized'}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="scheduled-amount">
+                    {item.type === 'income' ? '+' : '-'}${item.amount.toFixed(2)}
+                  </div>
+                </li>
+              ))
+            ) : (
+              <li className="no-scheduled">No upcoming items</li>
+            )}
+          </ul>
+        </div>
+      </div>
     </div>
   );
 }

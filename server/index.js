@@ -102,6 +102,27 @@ app.post('/auth/login', async (req, res) => {
   }
 });
 
+// ✅ Manual Password Reset (no email/OTP)
+app.post('/auth/reset-password', async (req, res) => {
+  const { email, currentPassword, newPassword } = req.body;
+
+  try {
+    const user = await User.findOne({ email });
+    if (!user) return res.status(400).json({ message: 'User not found' });
+
+    const isMatch = await bcrypt.compare(currentPassword, user.password);
+    if (!isMatch) return res.status(400).json({ message: 'Incorrect current password' });
+
+    const hashed = await bcrypt.hash(newPassword, 10);
+    user.password = hashed;
+    await user.save();
+
+    return res.json({ message: 'Password updated successfully' });
+  } catch (err) {
+    return res.status(500).json({ message: 'Server error' });
+  }
+});
+
 // ✅ Google OAuth
 app.get('/auth/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
 
@@ -124,6 +145,7 @@ app.use('/api/profile', authenticate, require('./routes/profileroutes'));
 app.use('/api/categories', require('./routes/categoriesroutes'));
 app.use('/api/user', require('./routes/user'));
 app.use('/api/export', require('./routes/export'));
+app.use('/api/notifications', require('./routes/notifications'));
 
 // Scheduled transactions
 let scheduledRoutes = require('./routes/scheduledroutes');
@@ -135,13 +157,12 @@ app.use('/api/scheduled', authenticate, scheduledRoutes);
 // Root route
 app.get('/', (req, res) => res.send('✅ Backend is running!'));
 
-// Connect to MongoDB
+// MongoDB + Cron
 mongoose.connect(process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/moneytrack', {
   useNewUrlParser: true,
   useUnifiedTopology: true
 })
 .then(() => {
-  // Daily scheduled transaction job
   cron.schedule('0 0 * * *', async () => {
     const now = dayjs();
     const due = await ScheduledTransaction.find({ nextRun: { $lte: now.toDate() } });

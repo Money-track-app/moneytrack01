@@ -11,12 +11,50 @@
 }
 
 .settings-container h1 {
+  font-family: 'Poppins', sans-serif;
+  font-size: 2.4rem;
+  font-weight: 700;
   text-align: center;
-  margin-bottom: 2rem;
-  font-size: 2rem;
-  font-weight: 600;
-  color: #1a1a1a;
+  margin-bottom: 2.5rem;
+  color: #111827;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  position: relative;
+  animation: slideDown 0.6s ease-in-out;
 }
+
+.settings-container h1::after {
+  content: '';
+  display: block;
+  margin: 0.6rem auto 0;
+  width: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #10b981, #16a34a);
+  border-radius: 5px;
+  animation: underlineSlide 0.8s ease-in-out 0.3s forwards;
+}
+@keyframes slideDown {
+  from {
+    transform: translateY(-20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes underlineSlide {
+  from {
+    width: 0;
+    opacity: 0;
+  }
+  to {
+    width: 70px;
+    opacity: 1;
+  }
+}
+
 
 /* AVATAR SECTION */
 .avatar-section {
