@@ -2,6 +2,7 @@ import './scheduled.css';
 import { useState, useEffect, useCallback, useContext } from 'react';
 import { FiEdit2, FiTrash2 } from 'react-icons/fi';
 import { SearchContext } from '../context/searchcontext';
+import axios from 'axios';
 
 const API_URL = 'http://localhost:5000';
 
@@ -24,6 +25,7 @@ export default function Scheduled() {
   const [ruleToDelete, setRuleToDelete] = useState(null);
   const { searchTerm } = useContext(SearchContext);
   const token = localStorage.getItem('token');
+  const [user, setUser] = useState(null);
 
   const fetchRules = useCallback(async () => {
     try {
@@ -44,7 +46,21 @@ export default function Scheduled() {
 
   useEffect(() => {
     fetchRules();
-  }, [fetchRules]);
+
+    const fetchUser = async () => {
+      try {
+        const { data } = await axios.get(`${API_URL}/api/profile`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        console.log('🔍 Scheduled Page User:', data);
+        setUser(data);
+      } catch (err) {
+        console.error('❌ Failed to fetch user info:', err);
+      }
+    };
+
+    fetchUser();
+  }, [fetchRules, token]);
 
   const handleDeleteClick = (id) => {
     setRuleToDelete(id);
@@ -175,17 +191,23 @@ export default function Scheduled() {
 
         <div className="form-group">
           <label htmlFor="currency">Currency</label>
-          <select
-            id="currency"
-            value={form.currency}
-            onChange={(e) => setForm({ ...form, currency: e.target.value })}
-          >
-            {["USD", "EUR", "GBP", "INR", "AED"].map(cur => (
-              <option key={cur} value={cur}>
-                {cur} ({getCurrencySymbol(cur)})
-              </option>
-            ))}
-          </select>
+          {user && !(user.isPremium || user.role === 'admin') ? (
+            <select id="currency" value={form.currency} disabled>
+              <option value="USD">USD ($)</option>
+            </select>
+          ) : (
+            <select
+              id="currency"
+              value={form.currency}
+              onChange={(e) => setForm({ ...form, currency: e.target.value })}
+            >
+              {["USD", "EUR", "GBP", "INR", "AED"].map(cur => (
+                <option key={cur} value={cur}>
+                  {cur} ({getCurrencySymbol(cur)})
+                </option>
+              ))}
+            </select>
+          )}
         </div>
 
         <div className="form-group">

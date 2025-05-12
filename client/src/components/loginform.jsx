@@ -22,22 +22,25 @@ const LoginForm = () => {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ email, password }), // ✅ No 'credentials: include'
+        body: JSON.stringify({ email, password }),
       });
 
       const data = await response.json();
-      console.log('✅ Login response:', data); // Debug
+      console.log('✅ Login response:', data);
 
       if (response.ok && data.token) {
-        // ✅ Store token in localStorage
+        // ✅ Store token
         localStorage.setItem('token', data.token);
 
-        // ✅ Decode payload to extract role
+        // ✅ Decode JWT
         const payload = JSON.parse(atob(data.token.split('.')[1]));
-        localStorage.setItem('role', payload.role || '');
 
-        // ✅ Store isPremium safely
-        const isPremium = payload.role === 'admin' ? true : data.isPremium === true;
+        // ✅ Determine role (from response or token)
+        const role = data.role || payload.role || '';
+        localStorage.setItem('role', role);
+
+        // ✅ Determine isPremium
+        const isPremium = role === 'admin' ? true : data.isPremium === true;
         localStorage.setItem('isPremium', isPremium ? 'true' : 'false');
 
         setEmail('');

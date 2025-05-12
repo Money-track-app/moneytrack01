@@ -95,6 +95,11 @@ export default function Reports() {
         headers: { Authorization: `Bearer ${token}` },
       });
 
+      if (res.status === 403) {
+        showToast('❌ Export limit reached. Upgrade to Premium.');
+        return;
+      }
+
       if (!res.ok) throw new Error('CSV download failed');
       const blob = await res.blob();
       saveAs(blob, 'transactions.csv');
@@ -116,6 +121,11 @@ export default function Reports() {
         method: 'POST',
         headers: { Authorization: `Bearer ${token}` },
       });
+
+      if (res.status === 403) {
+        showToast('❌ Export limit reached. Upgrade to Premium.');
+        return;
+      }
 
       if (!res.ok) throw new Error('PDF download failed');
 

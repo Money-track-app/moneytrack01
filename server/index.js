@@ -18,7 +18,6 @@ const ScheduledTransaction = require('./models/scheduledtransaction');
 // Passport config
 require('./passport');
 
-// Express app setup
 const app = express();
 const PORT = process.env.PORT || 5000;
 const SECRET = process.env.JWT_SECRET || 'secretkey';
@@ -38,7 +37,7 @@ app.use(passport.initialize());
 app.use(passport.session());
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-// ✅ Register Route
+// ✅ Register Route with admin role assignment
 app.post('/auth/register', async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -47,14 +46,30 @@ app.post('/auth/register', async (req, res) => {
     }
 
     const hashed = await bcrypt.hash(password, 10);
-    const newUser = await User.create({ email, password: hashed });
-    res.status(201).json({ message: 'User registered', user: { id: newUser._id, email } });
+    const isAdmin = email === 'admin@moneytrack.com';
+
+    const newUser = await User.create({
+      email,
+      password: hashed,
+      role: isAdmin ? 'admin' : 'user',
+      isPremium: isAdmin
+    });
+
+    res.status(201).json({
+      message: 'User registered',
+      user: {
+        id: newUser._id,
+        email: newUser.email,
+        role: newUser.role,
+        isPremium: newUser.isPremium
+      }
+    });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 });
 
-// ✅ Login Route with token + isPremium
+// ✅ Login Route with token + role + isPremium
 app.post('/auth/login', async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -64,7 +79,6 @@ app.post('/auth/login', async (req, res) => {
       return res.status(400).json({ message: 'Invalid credentials' });
     }
 
-    // Promote admin
     if (email === 'admin@moneytrack.com' && user.role !== 'admin') {
       user.role = 'admin';
       user.isPremium = true;
@@ -80,6 +94,7 @@ app.post('/auth/login', async (req, res) => {
     res.json({
       message: 'Login successful',
       token,
+      role: user.role,
       isPremium: user.isPremium
     });
   } catch (err) {
@@ -98,7 +113,7 @@ app.get('/auth/google/callback',
   }
 );
 
-// Auth middleware
+// Middleware
 const authenticate = require('./middleware/authenticate');
 
 // Routes
@@ -110,25 +125,23 @@ app.use('/api/categories', require('./routes/categoriesroutes'));
 app.use('/api/user', require('./routes/user'));
 app.use('/api/export', require('./routes/export'));
 
-// Conditionally load scheduled routes
+// Scheduled transactions
 let scheduledRoutes = require('./routes/scheduledroutes');
 if (scheduledRoutes && typeof scheduledRoutes.default === 'function') {
   scheduledRoutes = scheduledRoutes.default;
 }
 app.use('/api/scheduled', authenticate, scheduledRoutes);
 
-// Root Route
+// Root route
 app.get('/', (req, res) => res.send('✅ Backend is running!'));
 
-// MongoDB Connection + Server Boot + Cron Job
+// Connect to MongoDB
 mongoose.connect(process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/moneytrack', {
   useNewUrlParser: true,
   useUnifiedTopology: true
 })
 .then(() => {
-  console.log('✅ Connected to MongoDB');
-
-  // ⏰ Daily scheduled transaction handler
+  // Daily scheduled transaction job
   cron.schedule('0 0 * * *', async () => {
     const now = dayjs();
     const due = await ScheduledTransaction.find({ nextRun: { $lte: now.toDate() } });
@@ -151,6 +164,6 @@ mongoose.connect(process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/moneytrack'
     }
   });
 
-  app.listen(PORT, () => console.log(`🚀 Server running at http://localhost:${PORT}`));
+  app.listen(PORT);
 })
-.catch(err => console.error('❌ DB connection error:', err));
+.catch(() => {});

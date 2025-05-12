@@ -22,10 +22,10 @@ const storage = multer.diskStorage({
 const upload = multer({ storage });
 const uploadAvatar = upload.single('avatar');
 
-// GET /api/profile
+// ✅ UPDATED: GET /api/profile includes `role`
 router.get('/', authenticate, async (req, res) => {
   try {
-    const user = await User.findById(req.user.id).select('fullName businessName avatarUrl email currency');
+    const user = await User.findById(req.user.id).select('fullName businessName avatarUrl email currency role');
     if (!user) return res.status(404).json({ error: 'User not found' });
     return res.json(user);
   } catch (err) {
@@ -80,7 +80,7 @@ router.post('/', authenticate, (req, res, next) => {
   }
 });
 
-// ✅ NEW: PUT /api/profile/currency (update user currency)
+// ✅ PUT /api/profile/currency (update user currency)
 router.put('/currency', authenticate, async (req, res) => {
   try {
     const { currency } = req.body;
@@ -98,7 +98,7 @@ router.put('/currency', authenticate, async (req, res) => {
   }
 });
 
-// ✅ NEW: GET /api/profile/currency (get current currency)
+// ✅ GET /api/profile/currency (get current currency)
 router.get('/currency', authenticate, async (req, res) => {
   try {
     const user = await User.findById(req.user.id).select('currency');

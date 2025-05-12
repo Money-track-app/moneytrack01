@@ -220,7 +220,7 @@ const AddTransaction = () => {
 
         <label>
           Currency:
-          {user && !user.isPremium && user.role !== 'admin' ? (
+          {user && !(user.isPremium || user.role === 'admin') ? (
             <select name="currency" value={form.currency} disabled>
               <option value="USD">$ - USD</option>
             </select>
